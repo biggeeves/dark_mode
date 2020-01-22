@@ -1,0 +1,22 @@
+{
+	"name": "Dark Mode",
+
+	"namespace": "DCC\\DarkModeExternalModule",
+
+	"description": "Change the skin of REDCap to dark mode.  Great for developers already in dark mode. Administrators ONLY.",
+
+    "authors": [
+        {
+            "name": "Greg Neils",
+            "email": "gn2003@cumc.columbia.edu",
+            "institution": "Data Coordinating Center @ Columbia"
+        }
+    ],
+
+	"enable-every-page-hooks-on-system-pages": true,
+
+	"permissions": [
+		"redcap_every_page_top"
+	]
+
+}
