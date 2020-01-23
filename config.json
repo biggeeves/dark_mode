@@ -1,22 +1,66 @@
 {
-	"name": "Dark Mode",
+  "name": "Dark Mode",
+  "namespace": "DCC\\DarkModeExternalModule",
+  "description": "Change the skin of REDCap to dark mode.  Great for developers already in dark mode. Administrators ONLY.",
+  "authors": [
+    {
+      "name": "Greg Neils",
+      "email": "gn2003@cumc.columbia.edu",
+      "institution": "Data Coordinating Center @ Columbia"
+    }
+  ],
+  "enable-every-page-hooks-on-system-pages": true,
+  "permissions": [
+    "redcap_every_page_top"
+  ],
+  "system-settings": [
+    {
+      "key": "usernames",
+      "name": "Username that would like dark mode. (coming soon Separate names with commas.)",
+      "required": false,
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "background_color",
+      "name": "Background color: Suggest #000, black",
+      "required": false,
+      "default": "#000",
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "normal_text_color",
+      "name": "Normal Text Color: Suggest #FFF, white",
+      "required": false,
+      "default": "#FFF",
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "link_color",
+      "name": "Link Color: Suggest #FFF, white",
+      "required": false,
+      "default": "#FFF",
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "success_color",
+      "name": "Success Color: Suggest #A5CC7A, green",
+      "required": false,
+      "default": "#A5CC7A",
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "warning_color",
+      "name": "Warning Color: Suggest #DC143C, red",
+      "required": false,
+      "default": "#DC143C",
+      "type": "text",
+      "repeatable": false
+    }
 
-	"namespace": "DCC\\DarkModeExternalModule",
-
-	"description": "Change the skin of REDCap to dark mode.  Great for developers already in dark mode. Administrators ONLY.",
-
-    "authors": [
-        {
-            "name": "Greg Neils",
-            "email": "gn2003@cumc.columbia.edu",
-            "institution": "Data Coordinating Center @ Columbia"
-        }
-    ],
-
-	"enable-every-page-hooks-on-system-pages": true,
-
-	"permissions": [
-		"redcap_every_page_top"
-	]
-
+  ]
 }
