@@ -10,25 +10,32 @@ class DarkModeExternalModule extends AbstractExternalModule
 {
     private $userNames;
     private $css;
-    private $background_color;
-    private $normal_text_color;
-    private $link_color;
+    private $background_primary_color;
+    private $background_secondary_color;
+    private $background_tertiary_color;
+    private $text_primary_color;
+    private $text_secondary_color;
+    private $text_tertiary_color;
+    private $link_primary_color;
+    private $white;
+    private $black;
     private $light_gray;
-    private $dark_gray;
-    private $success;
-    private $warning;
+    private $primary_color;
+    private $success_color;
+    private $warning_color;
+    private $danger_color;
     private $canUse;
 
     function __construct()
     {
         parent::__construct();
-        $this->setValues();
+
         $this->check_users();
+
         if ($this->canUse) {
+            $this->setValues();
             $this->setColors();
             $this->createCSS();
-        } else {
-            echo 'it did not run' . $this->canUse;
         }
     }
 
@@ -40,57 +47,83 @@ class DarkModeExternalModule extends AbstractExternalModule
 // todo
     private function check_users()
     {
+        /** Get Users that should have the color change effect */
+        $this->userNames = AbstractExternalModule::getSystemSetting('user_names');
+
+        $id = USERID;
         $this->canUse = false;
         if (USERID === $this->userNames) {
             $this->canUse = true;
+        } else {
+            echo '<script>console.log("user name does NOT match ' . $id . ' & ' . $this->userNames . ' ");</script>';
         }
     }
 
     private function setValues()
     {
-        /** Get Users that should have the color change effect */
-        $this->userNames = AbstractExternalModule::getSystemSetting('userNames');
 
-        /** Get Background color */
-        $this->background_color = AbstractExternalModule::getSystemSetting('background_color');
-        if (is_null($this->background_color)) {
-            $this->background_color = "#000";
-        }
 
-        /** Get normal text color */
-        $this->normal_text_color = AbstractExternalModule::getSystemSetting('normal_text_color');
-        if (is_null($this->normal_text_color)) {
-            $this->normal_text_color = "#FFF";
-        }
+        /** Primary Background color */
+        $this->background_primary_color = AbstractExternalModule::getSystemSetting('background_primary_color');
 
-        /** Get link color */
-        $this->link_color = AbstractExternalModule::getSystemSetting('link_color');
-        if (is_null($this->link_color)) {
-            $this->link_color = "#FFF";
-        }
+        /** Primary text color */
+        $this->text_primary_color = AbstractExternalModule::getSystemSetting('text_primary_color');
 
-        /** Get success color */
+        /** Link color */
+        $this->link_primary_color = AbstractExternalModule::getSystemSetting('link_color');
+
+        /** Primary color */
+        $this->primary_color = AbstractExternalModule::getSystemSetting('primary_color');
+
+        /** Success color */
         $this->success_color = AbstractExternalModule::getSystemSetting('success_color');
-        if (is_null($this->success_color)) {
-            $this->success_color = "#A5CC7A";
-        }
 
-        /** Get link color */
+        /** Warning color */
         $this->warning_color = AbstractExternalModule::getSystemSetting('warning_color');
-        if (is_null($this->warning_color)) {
-            $this->warning_color = "#DC143C";
-        }
+
+        /** Danger color */
+        $this->danger_color = AbstractExternalModule::getSystemSetting('danger_color');
+
+        /*
+         * todo think about hover colors
+        */
     }
 
     private function setColors()
     {
-        // $this->background_color = '#000';
-        // $this->normal_text_color = '#f8f8f8';
-        // $this->link_color = '#f8f8f8';
-        $this->light_gray = '#EEE';
-        $this->dark_gray = '#222';
-        $this->success = '#A5CC7A';
-        $this->warning = '#DC143C';
+        // trick: enter in a text color like black and everything will be black
+        if($this->isHex($this->background_primary_color)) {
+            $this->background_secondary_color = $this->adjustBrightness($this->background_primary_color, 0.15);
+            $this->background_tertiary_color = $this->adjustBrightness($this->background_primary_color, 0.30);
+        } else {
+            $this->background_secondary_color = $this->background_primary_color;
+            $this->background_tertiary_color = $this->background_primary_color;
+        }
+        if($this->isHex($this->text_primary_color)) {
+            $this->text_secondary_color = $this->adjustBrightness($this->text_primary_color, -0.15);
+            $this->text_tertiary_color = $this->adjustBrightness($this->text_primary_color, -0.30);
+        } else {
+            $this->text_secondary_color = $this->text_primary_color;
+            $this->text_tertiary_color = $this->text_primary_color;
+
+        }
+        $this->light_gray = '#DDD';
+        $this->white = '#FFF';
+        $this->black = '#000';
+
+        if(!$this->primary_color) {
+            $this->primary_color = '#2e6da4';
+        }
+        if(!$this->success_color) {
+            $this->success_color = '#28a745';
+        }
+        if(!$this->warning_color) {
+            $this->warning_color = '#ffc107';
+        }
+
+        if(!$this->danger_color) {
+            $this->danger_color = '#dc3545';
+        }
     }
 
     private function createCSS()
@@ -99,101 +132,158 @@ class DarkModeExternalModule extends AbstractExternalModule
          * Then create strings that build each element
          * This way some items, when left blank, will NOT be overriden by the E.M.
          * Instead leaving the default REDCap css un-affected.
-        **/
+         **/
 
-        $light_gray = $this->light_gray;
-        $dark_gray = $this->dark_gray;
-        $white = $this->normal_text_color;
-        $success = $this->success;
-        $warning = $this->warning;
+
+        // This way the background-color would not be overriding anything when the user left it blank.
+        $black = "#000";
+
+        /*shorthand codes which allow the ability to NOT set a color if not defined.
+         * bgc = Background Color
+         * tc = Text Color
+         * lc = Link Color
+        */
+
+        // set all background colors if the primary color is set
+        if ($this->background_primary_color) {
+            $bgc1 = '  background-color:' . $this->background_primary_color . ' !important;';
+            $bgc2 = '  background-color:' . $this->background_secondary_color . ' !important;';
+            $bgc3 = '  background-color:' . $this->background_tertiary_color . ' !important;';
+            $bgTrans = '  background-color:transparent !important;';
+        } else {
+            $bgc1 = '';
+            $bgc2 = '';
+            $bgc3 = '';
+            $bgTrans = '';
+        }
+
+        // set all text colors if the primary text color is set
+        if ($this->text_primary_color) {
+            $tc1 = '  color:' . $this->text_primary_color . ' !important;';
+            $tc2 = '  color:' . $this->text_secondary_color . ' !important;';
+            $tc3 = '  color:' . $this->text_tertiary_color . ' !important;';
+        } else {
+            $tc1 = '';
+            $tc2 = '';
+            $tc3 = '';
+        }
+
+
+        if ($this->link_primary_color) {
+            $lc1 = '  color:' . $this->link_primary_color . ' !important;';
+        } else {
+            $lc1 = '';
+        }
+
+        $bg_pc = '  background-color:' . $this->primary_color . ' !important;';
 
         $css = '<style>' .
             'body{' .
-            '  color:' . $white . ';' .
-            '  background-color:' . $this->background_color . ';' .
+            $tc1 .
+            $bgc1 .
             '}' . PHP_EOL .
 
             '.menubox {' .
-            '  background-color:' . $dark_gray . ';' .
+            $bgc2 .
             '}' . PHP_EOL .
 
-            'a, a:visited, a:link {' .
-            '  color:' . $light_gray . ';' .
+            'A, A:visited, A:link {' .
+            $lc1 .
             '}' . PHP_EOL .
+
+            'a.aGrid:visited, a.aGrid:link {' .
+            $lc1 .
+            '}' . PHP_EOL .
+
+            'a[style*="color:#800000"]{' .
+            $lc1 .
+            '}' . PHP_EOL .
+
+            '#menuLnkChooseOtherRec {' .
+            $lc1 . '}' . PHP_EOL .
 
             '.x-panel-header {' .
-            '  background-color:' . $dark_gray . ';' .
-            '  color:' . $light_gray . ';' .
-            '  border-color:' . $this->background_color . ';' .
+            $bgc2 .
+            '  border-color:' . $this->background_secondary_color . ';' .
+            $tc2.
             '}' . PHP_EOL .
 
             '#west .fas, #west .far, #west .fa {' .
-            '  color: #555;' .
+            $tc2.
             '}' . PHP_EOL .
 
             '#west {' .
-            '  border-color: ' . $this->background_color . ';' .
-            '  background-color:' . $dark_gray . ';' .
-            '}' . PHP_EOL .
-            '#south {' .
-            '  border-color: ' . $this->background_color . ';' .
-            '  background-color:' . $this->background_color . ';' .
+            '  border-color: ' . $this->background_tertiary_color . ';' .
+            $bgc2 .
             '}' . PHP_EOL .
 
-            '#pagecontainer {background-color:' . $this->background_color . ';}' . PHP_EOL .
+            '#south {' .
+            '  border-color: transparent;' .
+            $bgTrans .
+            '}' . PHP_EOL .
+
+            '#pagecontainer {' .
+            $bgTrans .
+            '}' . PHP_EOL .
 
             '#control_center_menu {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $light_gray . ';' .
+            $bgTrans .
+            $tc2.
             '}' . PHP_EOL .
 
-            '#center{background-color:' . $this->background_color . ';}' . PHP_EOL .
+            '.cc_menu_divider {' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+
+            '#center {' .
+            $bgTrans .
+            '}' . PHP_EOL .
 
             '#project-menu-logo {' .
-            '  background-color:' . $white . ';' .
-            '  border-color:' . $this->background_color . ';' .
+            '  background-color:' . $this->white . ';' .
+            '  border-color:' . $this->background_primary_color . ';' .
+            '}' . PHP_EOL .
+
+            '#senditbox {' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#subheader { background-image:none;}' . PHP_EOL .
 
             '.projhdr {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $light_gray . ';' .
-            '  border-color:' . $this->background_color . ';' .
+            $bgTrans .
+            $tc2.
+            '  border-color:' . $this->background_primary_color . ';' .
             '}' . PHP_EOL .
 
             '.yellow {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $white . ';' .
-            '  border-color:' . $this->background_color . ';' .
+            $bgTrans .
+            '  color:' . $this->white  . ';' .
+            '  border-color:' . $this->background_primary_color . ';' .
             '}' . PHP_EOL .
 
             '.header {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $light_gray . ';' .
-            '  border-color:' . $this->background_color . ';' .
+            $bgTrans .
+            $tc2.
+            '  border-color:' . $this->background_primary_color . ';' .
             '}' . PHP_EOL .
 
             '.well {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  border-color:' . $light_gray . ';' .
-            '}' . PHP_EOL .
-
-            'nav.navbar {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $light_gray . ';' .
-            '  border-color:' . $this->background_color . ';' .
+            $bgc2 .
+            '  border-color:' . $this->text_secondary_color . ';' .
             '}' . PHP_EOL .
 
             '.table {' .
-            '  color:' . $light_gray . ';' .
+            $tc2.
             '}' . PHP_EOL .
 
             '.external-modules-configure-button, ' .
             '.external-modules-disable-button,' .
             '.external-modules-usage-button {' .
-            '  color:' . $light_gray . ';' .
-            '  background: transparent;' .
+            $tc2.
+            $bgc2 .
+            '  border-color: ' . $this->background_tertiary_color . ';' .
             '}' . PHP_EOL .
 
             '.labelrc,' .
@@ -201,107 +291,122 @@ class DarkModeExternalModule extends AbstractExternalModule
             '.data,' .
             '.data2,' .
             '.data_matrix {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  border-color:' . $this->background_color . ';' .
-            '  color:' . $white . ' !important;' .
+            $bgTrans .
+            '  border-color: transparent;' .
+            $tc1 .
             ';}' . PHP_EOL .
 
             '.flexigrid div.mDiv,' .
             '.flexigrid div.hDiv,' .
             '.flexigrid div.bDiv {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $white . ';' .
+            $bgTrans .
+            '}' . PHP_EOL .
+
+            '.flexigrid {' .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.flexigrid div.mDiv div.ftitle {' .
-            '  color:' . $white . ';' .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.myprojstripe {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  border-color: ' . $this->background_color . ';' .
+            $bgTrans .
+            '  border-color: transparent;' .
             '}' . PHP_EOL .
 
-            '#table-proj_table tr:not(.nohover):hover td,
-            #table-proj_table tr:not(.nohover):hover td.sorted,
-            #table-proj_table tr:not(.nohover).trOver td.sorted,
-            #table-proj_table tr:not(.nohover).trOver td {' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            '#table-proj_table tr:not(.nohover):hover td,' .
+            '#table-proj_table tr:not(.nohover):hover td.sorted,' .
+            '#table-proj_table tr:not(.nohover).trOver td.sorted,' .
+            '#table-proj_table tr:not(.nohover).trOver td {' .
+            $bgc2 .
             '}' . PHP_EOL .
 
             '.flexigrid tr.erow td {' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $bgTrans .
             '}' . PHP_EOL .
 
-            '.flexigrid div.bDiv tr:hover td,
-     		.flexigrid div.bDiv tr:hover td.sorted,
-	    	.flexigrid div.bDiv tr.trOver td.sorted,
-		    .flexigrid div.bDiv tr.trOver td { ' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            '.flexigrid div.bDiv tr:hover td,' .
+            '.flexigrid div.bDiv tr:hover td.sorted,' .
+            '.flexigrid div.bDiv tr.trOver td.sorted,' .
+            '.flexigrid div.bDiv tr.trOver td { ' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '.modal-content {' .
-            '  background-color:' . $dark_gray . ';' .
-            '  color:' . $white . ';' .
+            $bgc2 .
+            $tc1 .
             '}' . PHP_EOL .
 
             'input[type="button"],' .
             'button.close {' .
-            '  background-color:' . $dark_gray . ';' .
-            '  color:' . $white . ';' .
+            $bgc2 .
+            $lc1 .
             '}' . PHP_EOL .
 
             'input[type="submit"] {' .
-            '  background-color:' . $dark_gray . ';' .
-            '  color:' . $white . ';' .
+            $bgc2 .
+            $lc1 .
             '}' . PHP_EOL .
 
             'input[type="file"] {' .
-            '  background-color:' . $this->background_color . ';' .
-            '  color:' . $white . ';' .
+            $bgTrans .
+            $lc1 .
             '}' . PHP_EOL .
 
+            'input[type="text"] {' .
+            $bgTrans .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            // todo this sets all buttons.  btn-success, btn-warning, btn-primary would need overrides!
+
             'button {' .
-            '  background-color:' . $dark_gray . ';' .
-            '  color:' . $white . ';' .
+            $bgc2 .
+            $lc1 .
+            '}' . PHP_EOL .
+
+            'button.success {' .
+            $bgc2 .
+            $lc1 .
             '}' . PHP_EOL .
 
             '.chklist {' .
-            '  background-color:' . $dark_gray . ';' .
+            $bgc2 .
             '}' . PHP_EOL .
 
-            '#img-external_resources,
-             #img-modules,
-             #img-define_events,
-             #img-test_project,
-             #img-user_rights,
-             #img-design,
-             #img-modify_project,
-             #img-randomization,
-             #img- {' .
+            '#img-external_resources,' .
+            '#img-modules,' .
+            '#img-define_events,' .
+            '#img-test_project,' .
+            '#img-user_rights,' .
+            '#img-design,' .
+            '#img-modify_project,' .
+            '#img-randomization,' .
+            '#img- {' .
             '  display:none;' .
             '}' . PHP_EOL .
 
             '.ui-widget-content {' .
-            '  background-color:' . $dark_gray . ' !important;' .
-            '  color:' . $white . ';' .
+            $bgc2 .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.ui-widget-header {' .
-            '  background: transparent !important;' .
+            $bgTrans .
             '  border-color: transparent !important;' .
-            '  color:' . $white . ';' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'textarea.x-form-field,' .
             '.x-form-field {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  color:' . $white . ' !important;' .
+            $bgTrans .
+            $tc1 .
             '}' . PHP_EOL .
 
             '#div_var_name {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  color:' . $white . ' !important;' .
+            $bgTrans .
+            $tc1 .
             '}' . PHP_EOL .
 
             '#div_add_field2 input,' .
@@ -311,81 +416,81 @@ class DarkModeExternalModule extends AbstractExternalModule
             '#addMatrixPopup select,' .
             '#addMatrixPopup textarea,' .
             '.x-form-textarea {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  color:' . $white . ' !important;' .
+            $bgTrans .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.datagreen {' .
-            '  color:' . $success . ';' .
-            '  background-color: transparent;' .
+            '  color:' . $this->success_color . ';' .
+            $bgTrans .
             '  border-color: transparent;' .
             '  background-image: none;' .
             '}' . PHP_EOL .
 
             '.datared {' .
-            '  color:' . $warning . ';' .
-            '  background-color: transparent;' .
+            '  color:' . $this->warning_color . ';' .
+            $bgTrans .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
             'div.darkgreen {' .
-            '  color:' . $white . ';' .
-            '  background-color: transparent !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             'div.green {' .
-            '  color:' . $white . ';' .
-            '  background-color:' . $dark_gray . ';' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             '.context_msg {' .
-            '  background-color:transparent;' .
+            $bgTrans .
             '}' . PHP_EOL .
 
 
             'div.blue {' .
-            '  color:' . $white . ';' .
-            '  background-color: transparent;' .
+            $tc1 .
+            $bgTrans .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
             'div.gray {' .
-            '  color:' . $white . ';' .
-            '  background-color:' . $dark_gray . ';' .
+            $tc1 .
+            $bgc2 .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
             'div.red {' .
-            '  color:' . $warning . ';' .
-            '  background-color:' . $dark_gray . ';' .
+            '  color:' . $this->warning_color . ';' .
+            $bgc2 .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
             '.label_header {' .
-            '  color:' . $white . ';' .
-            '  background-color: transparent !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#addUsersRolesDiv {' .
-            '  color:' . $white . ';' .
-            '  background-color: transparent !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#rsd_legend {' .
-            '  color:' . $white . ';' .
-            '  background-color: transparent !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
 
             '.ui-dialog .ui-dialog-buttonpane button {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color: transparent;' .
+            $lc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
 
             '.jqbuttonsm, .jqbuttonmed {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color: transparent;' .
+            $lc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '.ui-state-hover,' .
@@ -396,141 +501,151 @@ class DarkModeExternalModule extends AbstractExternalModule
             '.ui-widget-header .ui-state-focus,' .
             '.ui-button:hover,' .
             '.ui-button:focus {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color: ' . $this->background_color . ';' .
+            $lc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
 
             'table.dataTable thead tr th {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgc1 .
             '}' . PHP_EOL .
 
             'tr.even {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgc1 .
             '}' . PHP_EOL .
 
             'tr.odd {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             'table.fixedHeader-floating {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             '.greenhighlight,' .
             '.greenhighlight  table td {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             '#formSaveTip {' .
-            '  background-color:' . $dark_gray . ';' .
+            $bgc2 .
             '}' . PHP_EOL .
 
 
             '#group_table div {' .
-            '  background-color:' . $dark_gray . ' !important;' .
-            '  color:' . $white . ' !important;' .
+            $bgc2 .
+            $tc1 .
             '}' . PHP_EOL .
 
             '#group_table div div span {' .
-            '  color:' . $white . ' !important;' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'h2.pending-title {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             'div.request-container {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             'div.graph-title {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
 
             'form table {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '.cc_info {' .
-            '  color:' . $white . ';' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'textarea.x-form-field, input.x-form-field, select.x-form-field {' .
-            '  color:' . $white . ';' .
-            '  background-color:' . $this->background_color . ';' .
+            $bgTrans .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            'textarea {' .
+            $bgTrans .
+            $tc1 .
             '}' . PHP_EOL .
 
 
-            '#control_center_window div {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            '.modal-dialog {' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
             '#enableListBtn {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $lc1 .
+            $bgc1 .
+            $bgc1 .
             '}' . PHP_EOL .
 
             '.cc_label {' .
-            '  background-color:' . $this->background_color . ';' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#user_list_table tr {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#mysql_dashboard td {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#reload_dropdown {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
 
             'select {' .
-            '  color:' . $white . ';' .
-            '  background-color:' . $this->background_color . ';' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#pubContent table {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $lc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '.btn-defaultrc {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $lc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
 
             '#surveyEmailFieldEnableDialog div div {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             'a.help:link, a.help:visited, a.help:active, a.help:hover {' .
-            '  color:' . $dark_gray . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $lc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
-            'div.chklist  {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            'a.help:active, a.help:hover {' .
+            '  border-color:' . $this->background_tertiary_color . ' !important;' .
+            '}' . PHP_EOL .
+
+            'div.chklist {' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             'img[src*="checkbox_cross.png"],' .
@@ -538,120 +653,149 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  display:none;' .
             '}' . PHP_EOL .
 
-            'img[src*="qrcode.png"] {' .
-            '  background-color:' . $white . ';' .
+            'img[src*="qrcode.png"],' .
+            'img[src*="progress_circle.gif"]' .
+            '{' .
+            '  background-color:' . $this->white  . ';' .
             '}' . PHP_EOL .
 
             'li.d-none a {' .
-            '  color:' . $white . ' !important;' .
+            $lc1 .
             '}' . PHP_EOL .
 
             'div[style*="background-color:#f5f5f5;"],' .
-            'div[style*="background-color:#FAFAFA;"] {' .
-            '  color:' . $white . ';' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            'div[style*="background-color:#FAFAFA;"], '.
+            'div[style*="background-color:#fafafa;"] '.
+            '{' .
+            $tc1 .
+            $bgTrans .
+            '}' . PHP_EOL .
+
+            'div[style*="color:#444;"] {' .
+            $tc1 .
+            '}' . PHP_EOL .
+            'h4[style*="color:#666;"] {' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'a[style*="color:#000;"] {' .
-            '  color:' . $white . ' !important;' .
+            $lc1 .
             '}' . PHP_EOL .
 
-            'span[style*="color:#555;"] {' .
-            '  color:' . $white . ' !important;' .
+            'p[style*="color:#777;"], ' .
+            'span[style*="color:#555;"], ' .
+            'span[style*="color:#000;"] {' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'input[style*="background-color: rgb(255, 255, 255)"] {' .
-            '  background-color: transparent !important;' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             'th[style*="background-color:#ddd;"],' .
             'td[style*="background-color:#f5f5f5;"]' .
             '{' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgc2 .
             '}' . PHP_EOL .
 
 
-            'td[style*="background-color: rgb(245, 245, 245)"],
-             td[style*="background-color:#eee"] {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            'td[style*="background-color: rgb(245, 245, 245)"],' .
+            'td[style*="background: rgb(240, 240, 240);"],' .
+            'td[style*="background-color:#eee"] {' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             'td[style*="color:#333;"] {' .
-            '  color:' . $white . ' !important;' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'div[style*="background-color:#EFF6E8;"],' .
             'div[style*="background-color:#eee;"],' .
             'div[style*="background-color:#ddd;"]' .
             '{' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgTrans .
+            '}' . PHP_EOL .
+
+            'div[style*="color:#800000;"]' .
+            '{' .
+            $tc1 .
             '}' . PHP_EOL .
 
 
             'textarea[style*="background: rgb(247, 235, 235)"] {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
+            $tc1 .
+            $bgTrans .
             '}' . PHP_EOL .
 
             'td.frmedit, div.frmedit, td.frmedit_row {' .
-            '  color:' . $white . ' !important;' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  border-bottom-color:' . $dark_gray . ' !important;' .
+            $tc1 .
+            $bgTrans .
+            $bgc2 .
             '}' . PHP_EOL .
 
             'table.form_border {' .
-            '  border-color:' . $this->background_color . ' !important;' .
+            '  border-color: transparent  !important;' .
             '}' . PHP_EOL .
 
             'input.btn2 {' .
-            '  border-color:' . $light_gray . ';' .
+            $lc1 .
             '}' . PHP_EOL .
 
             '#element_enum_clone {' .
-            '  color:' . $white . ' !important;' .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.mc_raw_val_fix b {' .
-            '  color:' . $warning . ';' .
+            '  color:' . $this->warning_color . ';' .
             '}' . PHP_EOL .
 
             '.dropdown-menu {' .
-            '  background-color:' . $dark_gray . ';' .
-            '  color:' . $white . ';' .
+            $bgc2 .
+            '  color:' . $this->white  . ';' .
             '}' . PHP_EOL .
 
             '#dashboard-config {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  color:' . $white . ' !important;' .
+            $bgTrans .
+            $tc1 .
             '}' . PHP_EOL .
 
             '#choose_select_forms_events_div_sub {' .
-            '  background-color:' . $dark_gray . ' !important;' .
-            '  color:' . $white . ' !important ;' .
+            $bgc2 .
+            $tc1 .
             '}' . PHP_EOL .
 
             'table.sched_table {' .
-            '  background-color: transparent !important;' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '.alert-success {' .
-            '  background-color: transparent;' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '#emailPartForm fieldset {' .
-            '  background-color: transparent !important;' .
+            $bgTrans .
             '}' . PHP_EOL .
 
             '.select2-container--default .select2-selection--single .select2-selection__rendered {' .
-            '  background-color:' . $this->background_color . ' !important;' .
-            '  color:' . $white . ' !important;' .
+            $bgTrans .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.author-institution {' .
-            '  color:' . $this->normal_text_color . ';' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            'nav.navbar {' .
+            '  background-color:' . $this->white  . ';' .
+            '  border-color:' . $this->background_primary_color . ';' .
+            '  color:' . $this->black . ';' .
+            '}' . PHP_EOL .
+
+            'nav.navbar a.nav-link{' .
+            '  color:' . $this->black . ' !important;' .
             '}' . PHP_EOL .
 
 
@@ -665,5 +809,126 @@ class DarkModeExternalModule extends AbstractExternalModule
         echo $this->css;
     }
 
+    /**
+     * Increases or decreases the brightness of a color by a percentage of the current brightness.
+     *
+     * @param string $hexCode Supported formats: `#FFF`, `#FFFFFF`, `FFF`, `FFFFFF`
+     * @param float $adjustPercent A number between -1 and 1. E.g. 0.3 = 30% lighter; -0.4 = 40% darker.
+     *
+     * @return  string
+     */
+    private function adjustBrightness($hexCode, $adjustPercent)
+    {
+        $hexCode = ltrim($hexCode, '#');
+
+        if (strlen($hexCode) == 3) {
+            $hexCode = $hexCode[0] . $hexCode[0] . $hexCode[1] . $hexCode[1] . $hexCode[2] . $hexCode[2];
+        }
+
+        $hexCode = array_map('hexdec', str_split($hexCode, 2));
+
+        foreach ($hexCode as & $color) {
+            $adjustableLimit = $adjustPercent < 0 ? $color : 255 - $color;
+            $adjustAmount = ceil($adjustableLimit * $adjustPercent);
+
+            $color = str_pad(dechex($color + $adjustAmount), 2, '0', STR_PAD_LEFT);
+        }
+
+        return '#' . implode($hexCode);
+    }
+
+    /**
+     * Check if a code entered by user is hexidecimal
+     *
+     * @param string $text
+     * @param float $adjustPercent A number between -1 and 1. E.g. 0.3 = 30% lighter; -0.4 = 40% darker.
+     *
+     * @return  string
+     */
+    private function isHex($text) {
+        $hexCode = ltrim($text, '#');
+        $isHex = true;
+        if (!strlen($hexCode) === 3 || !strlen($hexCode) === 6) {
+            $isHex = false;
+        } else if (!ctype_xdigit($hexCode)) {
+            $isHex = false;
+        }
+        return $isHex;
+    }
+
+    private function createElements()
+    {
+        // todo think about the order of the elements.  Should they be specified or not
+        // If Not ordered than merging arrays is OK.  If order is important that a master array will be needed.
+        // There is also the issue that "!important will have to be thrown on every settings which is not good.
+        // $elements = ['body', '.menubox', 'a', 'a:visited', 'a:link'];
+
+
+        $background_transparent_elements = [
+            '#pagecontainer',
+            '#south'
+        ];
+        $background_primary_elements = [
+            'body',
+            '.menubox'
+        ];
+        $color_primary_elements = [
+            'body'
+        ];
+        $color_secondary_elements = [
+            '.menuboxsub'
+        ];
+        $link_primary_elements = [
+            'a',
+            'a:visited',
+            'a:link',
+            'a.aGrid:visited',
+            'a.aGrid:link',
+            'a[style*="color:#800000"]',
+            'a[style*="color:#A00000"]',
+            '#menuLnkChooseOtherRec'
+        ];
+        $elements = array_unique(
+            array_merge(
+                $background_transparent_elements,
+                $background_primary_elements,
+                $color_primary_elements,
+                $color_secondary_elements,
+                $link_primary_elements
+            )
+        );
+        $el = [];
+        foreach ($elements as $key => $element) {
+            if (in_array($element, $background_primary_elements)) {
+                $el[$element]['background-color'] = $this->background_primary_color;
+            }
+            if (in_array($element, $background_transparent_elements)) {
+                $el[$element]['background-color'] = 'transparent';
+            }
+            if (in_array($element, $color_primary_elements)) {
+                $el[$element]['color'] = $this->text_primary_color;
+            }
+            if (in_array($element, $color_secondary_elements)) {
+                $el[$element]['color'] = $this->text_secondary_color;
+            }
+            if (in_array($element, $link_primary_elements)) {
+                $el[$element]['color'] = $this->link_primary_color;
+            }
+        }
+        $css = '<style>' . PHP_EOL;
+        foreach ($el as $element => $attributes) {
+            $css .= $element . '{' . PHP_EOL;
+            if (count($attributes) > 0) {
+                foreach ($attributes as $attribute => $value) {
+                    $css .= $attribute . ':' . $value . ';' . PHP_EOL;
+                }
+            }
+            $css .= '}' . PHP_EOL;
+        }
+        $css = '</style>' . PHP_EOL;
+
+        return $css;
+
+    }
 
 }

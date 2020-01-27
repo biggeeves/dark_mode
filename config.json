@@ -15,25 +15,23 @@
   ],
   "system-settings": [
     {
-      "key": "usernames",
-      "name": "Username that would like dark mode. (coming soon Separate names with commas.)",
+      "key": "user_names",
+      "name": "Usernames that will be in dark mode. (coming soon Separate names with commas.)",
       "required": false,
-      "type": "text",
+      "type": "textarea",
       "repeatable": false
     },
     {
-      "key": "background_color",
+      "key": "background_primary_color",
       "name": "Background color: Suggest #000, black",
       "required": false,
-      "default": "#000",
       "type": "text",
       "repeatable": false
     },
     {
-      "key": "normal_text_color",
+      "key": "text_primary_color",
       "name": "Normal Text Color: Suggest #FFF, white",
       "required": false,
-      "default": "#FFF",
       "type": "text",
       "repeatable": false
     },
@@ -41,23 +39,34 @@
       "key": "link_color",
       "name": "Link Color: Suggest #FFF, white",
       "required": false,
-      "default": "#FFF",
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "primary_color",
+      "name": "Primary Color for buttons: Defaults to blue: #2e6da4",
+      "required": false,
       "type": "text",
       "repeatable": false
     },
     {
       "key": "success_color",
-      "name": "Success Color: Suggest #A5CC7A, green",
+      "name": "Success Color for buttons: Defaults to green: #28a745",
       "required": false,
-      "default": "#A5CC7A",
       "type": "text",
       "repeatable": false
     },
     {
       "key": "warning_color",
-      "name": "Warning Color: Suggest #DC143C, red",
+      "name": "Warning Color for buttons and text: Defaults to yellow: #ffc107 ",
       "required": false,
-      "default": "#DC143C",
+      "type": "text",
+      "repeatable": false
+    },
+    {
+      "key": "danger_color",
+      "name": "Danger Color for buttons and text: Defaults to red: #dc3545 ",
+      "required": false,
       "type": "text",
       "repeatable": false
     }
