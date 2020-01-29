@@ -8,23 +8,97 @@ use \REDCap;
 
 class DarkModeExternalModule extends AbstractExternalModule
 {
-    private $userNames;
+    /**
+     * @var string $user_names CSV of user names that will see the custom css
+     */
+    private $user_names;
+
+    /**
+     * @var string $V desc
+     */
     private $css;
+
+    /**
+     * @var string $background_primary_color Primary background color.
+     * May be used to calculate other background colors
+     */
     private $background_primary_color;
+
+    /**
+     * @var string $background_secondary_color Secondary background color
+     */
     private $background_secondary_color;
+
+    /**
+     * @var string $background_tertiary_color Tertiary background color
+     */
     private $background_tertiary_color;
+
+    /**
+     * @var string $text_primary_color Primary text color: Main body
+     */
     private $text_primary_color;
+
+    /**
+     * @var string $text_secondary_color Secondary text color
+     */
     private $text_secondary_color;
+
+    /**
+     * @var string $text_tertiary_color Tertiary text color
+     */
     private $text_tertiary_color;
+
+    /**
+     * @var string $link_primary_color All links and some buttons are set to this color.
+     */
     private $link_primary_color;
+
+    /**
+     * @var string $white HTML color code for white
+     */
     private $white;
+
+    /**
+     * @var string $black HTML color code for black
+     */
     private $black;
-    private $light_gray;
+
+    /**
+     * @var string $primary_color // todo
+     */
     private $primary_color;
+
+    /**
+     * @var string $success_color based on Bootstrap success color/idea
+     */
     private $success_color;
+
+    /**
+     * @var string $warning_color based on Bootstrap warning color/idea
+     */
     private $warning_color;
+
+    /**
+     * @var string $danger_color desc based on Bootstrap Danger color/idea
+     */
     private $danger_color;
-    private $canUse;
+    /**
+     * @var boolean $can_use Does a user have rights to use the css?
+     */
+    private $can_use;
+
+    /**
+     * @var string $background_brightness values: same, brighter, darker, specify
+     */
+    private $background_brightness;
+
+    /**
+     * @var string $background_brightness_percent
+     * Percent that the secondary and tertiary background change in brightness.
+     * Nullable
+     */
+    private $background_brightness_percent;
 
     function __construct()
     {
@@ -32,101 +106,149 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         $this->check_users();
 
-        if ($this->canUse) {
-            $this->setValues();
-            $this->setColors();
-            $this->createCSS();
+        if ($this->can_use) {
+            $this->set_values();
+            $this->set_colors();
+            $this->adjust_background_colors();
+            $this->create_css();
         }
     }
 
     function redcap_every_page_top($project_id, $record, $instrument)
     {
-        $this->outputCSS();
-    }
-
-// todo
-    private function check_users()
-    {
-        /** Get Users that should have the color change effect */
-        $this->userNames = AbstractExternalModule::getSystemSetting('user_names');
-
-        $id = USERID;
-        $this->canUse = false;
-        if (USERID === $this->userNames) {
-            $this->canUse = true;
-        } else {
-            echo '<script>console.log("user name does NOT match ' . $id . ' & ' . $this->userNames . ' ");</script>';
+        if ($this->can_use) {
+            $this->output_css();
         }
     }
 
-    private function setValues()
+    private function check_users()
+    {
+        $this->can_use = false;
+        $this->user_names = $this->clean_values(AbstractExternalModule::getSystemSetting('user_names'));
+        // allow all users if a user name is not specified.
+        if (!$this->user_names) {
+            $this->can_use = true;
+        }
+        $allowed_users = explode(",", $this->user_names);
+        foreach ($allowed_users as $user) {
+            if (strtoupper(trim($user)) === strtoupper(USERID)) {
+                $this->can_use = true;
+            }
+        }
+        if ($this->can_use === false) {
+            echo '<script>console.log("user name does NOT match ' . USERID . ' & ' . $this->user_names . ' ");</script>';
+        }
+    }
+
+    private function clean_values($value)
+    {
+        $cleaned = trim(strip_tags($value));
+        $cleaned = str_replace('"', "", $cleaned);
+        $cleaned = str_replace('"', "", $cleaned);
+        return $cleaned;
+    }
+
+    private function set_values()
     {
 
 
-        /** Primary Background color */
-        $this->background_primary_color = AbstractExternalModule::getSystemSetting('background_primary_color');
+        /** Primary background color */
+        $this->background_primary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'background_primary_color'
+            ));
+
+        /** Secondary background color */
+        $this->background_secondary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'background_secondary_color'
+            ));
+
+        /** Tertiary background color */
+        $this->background_tertiary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'background_tertiary_color'
+            ));
 
         /** Primary text color */
-        $this->text_primary_color = AbstractExternalModule::getSystemSetting('text_primary_color');
+        $this->text_primary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'text_primary_color'
+            ));
 
         /** Link color */
-        $this->link_primary_color = AbstractExternalModule::getSystemSetting('link_color');
+        $this->link_primary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'link_color'
+            ));
 
         /** Primary color */
-        $this->primary_color = AbstractExternalModule::getSystemSetting('primary_color');
+        $this->primary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'primary_color'
+            ));
 
         /** Success color */
-        $this->success_color = AbstractExternalModule::getSystemSetting('success_color');
+        $this->success_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'success_color'
+            ));
 
         /** Warning color */
-        $this->warning_color = AbstractExternalModule::getSystemSetting('warning_color');
+        $this->warning_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'warning_color'
+            ));
 
         /** Danger color */
-        $this->danger_color = AbstractExternalModule::getSystemSetting('danger_color');
+        $this->danger_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'danger_color'
+            ));
+
+        /** background brightness color */
+        $this->background_brightness = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'background_brightness'
+            ));
+
+        /** background brightness percent */
+        $this->background_brightness_percent = intval($this->clean_values(
+                AbstractExternalModule::getSystemSetting(
+                    'background_brightness_percent'
+                ))) / 100;
 
         /*
-         * todo think about hover colors
+         * todo How to handle darker,lighter, specify, and percent brightness
         */
     }
 
-    private function setColors()
+    private function set_colors()
     {
         // trick: enter in a text color like black and everything will be black
-        if($this->isHex($this->background_primary_color)) {
-            $this->background_secondary_color = $this->adjustBrightness($this->background_primary_color, 0.15);
-            $this->background_tertiary_color = $this->adjustBrightness($this->background_primary_color, 0.30);
-        } else {
-            $this->background_secondary_color = $this->background_primary_color;
-            $this->background_tertiary_color = $this->background_primary_color;
-        }
-        if($this->isHex($this->text_primary_color)) {
-            $this->text_secondary_color = $this->adjustBrightness($this->text_primary_color, -0.15);
-            $this->text_tertiary_color = $this->adjustBrightness($this->text_primary_color, -0.30);
-        } else {
-            $this->text_secondary_color = $this->text_primary_color;
-            $this->text_tertiary_color = $this->text_primary_color;
 
-        }
-        $this->light_gray = '#DDD';
+        $is_auto_set_background = $this->adjust_background_colors();
+
         $this->white = '#FFF';
         $this->black = '#000';
 
-        if(!$this->primary_color) {
+        if (!$this->primary_color) {
             $this->primary_color = '#2e6da4';
         }
-        if(!$this->success_color) {
+        if (!$this->success_color) {
             $this->success_color = '#28a745';
         }
-        if(!$this->warning_color) {
+        if (!$this->warning_color) {
             $this->warning_color = '#ffc107';
         }
 
-        if(!$this->danger_color) {
+        if (!$this->danger_color) {
             $this->danger_color = '#dc3545';
         }
     }
 
-    private function createCSS()
+    /** @noinspection CssInvalidHtmlTagReference */
+    private function create_css()
     {
         /** todo: create arrays for elements that should have the background changed,
          * Then create strings that build each element
@@ -146,15 +268,23 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         // set all background colors if the primary color is set
         if ($this->background_primary_color) {
+            $bg_trans = '  background-color:transparent !important;';
             $bgc1 = '  background-color:' . $this->background_primary_color . ' !important;';
             $bgc2 = '  background-color:' . $this->background_secondary_color . ' !important;';
             $bgc3 = '  background-color:' . $this->background_tertiary_color . ' !important;';
-            $bgTrans = '  background-color:transparent !important;';
+            $bc1 = '  border-color:' . $this->background_primary_color . ' !important;';
+            $bc2 = '  border-color:' . $this->background_secondary_color . ' !important;';
+            $bc3 = '  border-color:' . $this->background_tertiary_color . ' !important;';
+            $bc_trans = '  border-color:transparent !important;';
         } else {
+            $bg_trans = '';
             $bgc1 = '';
             $bgc2 = '';
             $bgc3 = '';
-            $bgTrans = '';
+            $bc1 = '';
+            $bc2 = '';
+            $bc3 = '';
+            $bc_trans = '';
         }
 
         // set all text colors if the primary text color is set
@@ -175,8 +305,6 @@ class DarkModeExternalModule extends AbstractExternalModule
             $lc1 = '';
         }
 
-        $bg_pc = '  background-color:' . $this->primary_color . ' !important;';
-
         $css = '<style>' .
             'body{' .
             $tc1 .
@@ -187,11 +315,14 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bgc2 .
             '}' . PHP_EOL .
 
-            'A, A:visited, A:link {' .
+            'A, ' .
+            'A:visited,' .
+            'A:link {' .
             $lc1 .
             '}' . PHP_EOL .
 
-            'a.aGrid:visited, a.aGrid:link {' .
+            'a.aGrid:visited,' .
+            ' a.aGrid:link {' .
             $lc1 .
             '}' . PHP_EOL .
 
@@ -204,86 +335,96 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '.x-panel-header {' .
             $bgc2 .
-            '  border-color:' . $this->background_secondary_color . ';' .
-            $tc2.
+            $bc2 .
+            $tc2 .
             '}' . PHP_EOL .
 
-            '#west .fas, #west .far, #west .fa {' .
-            $tc2.
+            '#west .fas,' .
+            '#west .far,' .
+            '#west .fa {' .
+            $tc2 .
             '}' . PHP_EOL .
 
             '#west {' .
-            '  border-color: ' . $this->background_tertiary_color . ';' .
             $bgc2 .
+            $bc3 .
             '}' . PHP_EOL .
 
             '#south {' .
-            '  border-color: transparent;' .
-            $bgTrans .
+            $bg_trans .
+            $bc_trans .
             '}' . PHP_EOL .
 
             '#pagecontainer {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#control_center_menu {' .
-            $bgTrans .
-            $tc2.
+            $bg_trans .
+            $tc2 .
+            $bc2 .
             '}' . PHP_EOL .
 
             '.cc_menu_divider {' .
             $bgc2 .
+            $bc_trans .
             '}' . PHP_EOL .
 
 
             '#center {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#project-menu-logo {' .
             '  background-color:' . $this->white . ';' .
-            '  border-color:' . $this->background_primary_color . ';' .
+            $bc1 .
             '}' . PHP_EOL .
 
             '#senditbox {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#subheader { background-image:none;}' . PHP_EOL .
 
             '.projhdr {' .
-            $bgTrans .
-            $tc2.
-            '  border-color:' . $this->background_primary_color . ';' .
+            $bg_trans .
+            $tc2 .
+            $bc1 .
             '}' . PHP_EOL .
 
             '.yellow {' .
-            $bgTrans .
-            '  color:' . $this->white  . ';' .
-            '  border-color:' . $this->background_primary_color . ';' .
+            $bg_trans .
+            $tc1 .
+            $bc1 .
             '}' . PHP_EOL .
 
             '.header {' .
-            $bgTrans .
-            $tc2.
-            '  border-color:' . $this->background_primary_color . ';' .
+            $bg_trans .
+            $tc2 .
+            $bc1 .
             '}' . PHP_EOL .
 
             '.well {' .
             $bgc2 .
-            '  border-color:' . $this->text_secondary_color . ';' .
+            $bc2 .
             '}' . PHP_EOL .
 
             '.table {' .
-            $tc2.
+            $tc2 .
             '}' . PHP_EOL .
 
-            '.external-modules-configure-button, ' .
+            '.external-modules-configure-button,' .
             '.external-modules-disable-button,' .
             '.external-modules-usage-button {' .
-            $tc2.
+            $tc2 .
             $bgc2 .
-            '  border-color: ' . $this->background_tertiary_color . ';' .
+            $bc3 .
+            '}' . PHP_EOL .
+
+            '.external-modules-input-element {' .
+            $tc1 .
+            $bgc2 .
+            $bc3 .
             '}' . PHP_EOL .
 
             '.labelrc,' .
@@ -291,7 +432,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '.data,' .
             '.data2,' .
             '.data_matrix {' .
-            $bgTrans .
+            $bg_trans .
             '  border-color: transparent;' .
             $tc1 .
             ';}' . PHP_EOL .
@@ -299,7 +440,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '.flexigrid div.mDiv,' .
             '.flexigrid div.hDiv,' .
             '.flexigrid div.bDiv {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.flexigrid {' .
@@ -311,7 +452,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.myprojstripe {' .
-            $bgTrans .
+            $bg_trans .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
@@ -323,14 +464,14 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.flexigrid tr.erow td {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.flexigrid div.bDiv tr:hover td,' .
             '.flexigrid div.bDiv tr:hover td.sorted,' .
             '.flexigrid div.bDiv tr.trOver td.sorted,' .
             '.flexigrid div.bDiv tr.trOver td { ' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.modal-content {' .
@@ -350,12 +491,12 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'input[type="file"] {' .
-            $bgTrans .
+            $bg_trans .
             $lc1 .
             '}' . PHP_EOL .
 
             'input[type="text"] {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -393,19 +534,19 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.ui-widget-header {' .
-            $bgTrans .
-            '  border-color: transparent !important;' .
+            $bg_trans .
+            $bc_trans .
             $tc1 .
             '}' . PHP_EOL .
 
             'textarea.x-form-field,' .
             '.x-form-field {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
             '#div_var_name {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -416,26 +557,26 @@ class DarkModeExternalModule extends AbstractExternalModule
             '#addMatrixPopup select,' .
             '#addMatrixPopup textarea,' .
             '.x-form-textarea {' .
-            $bgTrans .
+            $bgc1 .
             $tc1 .
             '}' . PHP_EOL .
 
             '.datagreen {' .
             '  color:' . $this->success_color . ';' .
-            $bgTrans .
+            $bg_trans .
             '  border-color: transparent;' .
             '  background-image: none;' .
             '}' . PHP_EOL .
 
             '.datared {' .
             '  color:' . $this->warning_color . ';' .
-            $bgTrans .
+            $bg_trans .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
             'div.darkgreen {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'div.green {' .
@@ -444,20 +585,20 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.context_msg {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
 
             'div.blue {' .
             $tc1 .
-            $bgTrans .
-            '  border-color: transparent;' .
+            $bg_trans .
+            $bc_trans .
             '}' . PHP_EOL .
 
             'div.gray {' .
             $tc1 .
             $bgc2 .
-            '  border-color: transparent;' .
+            $bc_trans .
             '}' . PHP_EOL .
 
             'div.red {' .
@@ -468,29 +609,29 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '.label_header {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#addUsersRolesDiv {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#rsd_legend {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
 
             '.ui-dialog .ui-dialog-buttonpane button {' .
             $lc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
 
             '.jqbuttonsm, .jqbuttonmed {' .
             $lc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.ui-state-hover,' .
@@ -502,7 +643,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '.ui-button:hover,' .
             '.ui-button:focus {' .
             $lc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
 
@@ -527,7 +668,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.greenhighlight,' .
-            '.greenhighlight  table td {' .
+            '.greenhighlight table td {' .
             $tc1 .
             $bgc2 .
             '}' . PHP_EOL .
@@ -564,7 +705,7 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'form table {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.cc_info {' .
@@ -572,12 +713,12 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'textarea.x-form-field, input.x-form-field, select.x-form-field {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
             'textarea {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -594,33 +735,33 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.cc_label {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#user_list_table tr {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#mysql_dashboard td {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#reload_dropdown {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
 
             'select {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#pubContent table {' .
             $lc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.btn-defaultrc {' .
@@ -631,21 +772,25 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '#surveyEmailFieldEnableDialog div div {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
-            'a.help:link, a.help:visited, a.help:active, a.help:hover {' .
+            'a.help:link,' .
+            'a.help:visited,' .
+            'a.help:active, ' .
+            'a.help:hover {' .
             $lc1 .
             $bgc2 .
             '}' . PHP_EOL .
 
-            'a.help:active, a.help:hover {' .
-            '  border-color:' . $this->background_tertiary_color . ' !important;' .
+            'a.help:active,' .
+            'a.help:hover {' .
+            $bc3 .
             '}' . PHP_EOL .
 
             'div.chklist {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'img[src*="checkbox_cross.png"],' .
@@ -656,7 +801,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'img[src*="qrcode.png"],' .
             'img[src*="progress_circle.gif"]' .
             '{' .
-            '  background-color:' . $this->white  . ';' .
+            '  background-color:' . $this->white . ';' .
             '}' . PHP_EOL .
 
             'li.d-none a {' .
@@ -664,11 +809,11 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'div[style*="background-color:#f5f5f5;"],' .
-            'div[style*="background-color:#FAFAFA;"], '.
-            'div[style*="background-color:#fafafa;"] '.
+            'div[style*="background-color:#FAFAFA;"], ' .
+            'div[style*="background-color:#fafafa;"] ' .
             '{' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'div[style*="color:#444;"] {' .
@@ -689,7 +834,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'input[style*="background-color: rgb(255, 255, 255)"] {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'th[style*="background-color:#ddd;"],' .
@@ -704,7 +849,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'td[style*="background: rgb(240, 240, 240);"],' .
             'td[style*="background-color:#eee"] {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'td[style*="color:#333;"] {' .
@@ -716,7 +861,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'div[style*="background-color:#ddd;"]' .
             '{' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'div[style*="color:#800000;"]' .
@@ -727,17 +872,17 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'textarea[style*="background: rgb(247, 235, 235)"] {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             'td.frmedit, div.frmedit, td.frmedit_row {' .
             $tc1 .
-            $bgTrans .
+            $bg_trans .
             $bgc2 .
             '}' . PHP_EOL .
 
             'table.form_border {' .
-            '  border-color: transparent  !important;' .
+            '  border-color: transparent !important;' .
             '}' . PHP_EOL .
 
             'input.btn2 {' .
@@ -754,11 +899,11 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '.dropdown-menu {' .
             $bgc2 .
-            '  color:' . $this->white  . ';' .
+            '  color:' . $this->white . ';' .
             '}' . PHP_EOL .
 
             '#dashboard-config {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -768,19 +913,19 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'table.sched_table {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.alert-success {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '#emailPartForm fieldset {' .
-            $bgTrans .
+            $bg_trans .
             '}' . PHP_EOL .
 
             '.select2-container--default .select2-selection--single .select2-selection__rendered {' .
-            $bgTrans .
+            $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -789,8 +934,8 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'nav.navbar {' .
-            '  background-color:' . $this->white  . ';' .
-            '  border-color:' . $this->background_primary_color . ';' .
+            '  background-color:' . $this->white . ';' .
+            $bc1 .
             '  color:' . $this->black . ';' .
             '}' . PHP_EOL .
 
@@ -798,13 +943,23 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  color:' . $this->black . ' !important;' .
             '}' . PHP_EOL .
 
+            'table.frmedit_tbl {' .
+            '  border: none;' .
+            '  border-bottom: 10px solid' . $this->background_tertiary_color . ' !important;' .
+            '}' . PHP_EOL .
 
             '</style>' . PHP_EOL;
 
         $this->css = str_replace('  ', ' ', $css);
+
+        /*
+         * More possible List page first followed by css.
+         * http://localhost/redcap/redcap_v9.5.2/ExternalModules/manager/control_center.php
+        .badge-warning, .badge-info on
+        */
     }
 
-    private function outputCSS()
+    private function output_css()
     {
         echo $this->css;
     }
@@ -841,11 +996,10 @@ class DarkModeExternalModule extends AbstractExternalModule
      * Check if a code entered by user is hexidecimal
      *
      * @param string $text
-     * @param float $adjustPercent A number between -1 and 1. E.g. 0.3 = 30% lighter; -0.4 = 40% darker.
-     *
      * @return  string
      */
-    private function isHex($text) {
+    private function is_hex($text)
+    {
         $hexCode = ltrim($text, '#');
         $isHex = true;
         if (!strlen($hexCode) === 3 || !strlen($hexCode) === 6) {
@@ -931,4 +1085,40 @@ class DarkModeExternalModule extends AbstractExternalModule
 
     }
 
+// todo: think of the logic given all of the options.
+
+    private function adjust_background_colors()
+    {
+        if($this->background_brightness_percent >= 0 && $this->background_brightness_percent <= 100){
+            $adjust_percent = $this->background_brightness_percent;
+        } else {
+            $adjust_percent = intval(12.5);
+        }
+        if ($this->background_brightness === "same") {
+            $adjust_percent = 0;
+        } else if ($this->background_brightness === "lighter") {
+            $adjust_percent = -1 * $adjust_percent;
+        } else if ($this->background_brightness === "darker") {
+            $adjust_percent = $adjust_percent;
+        } else {
+            $this->background_brightness_percent = null;
+        }
+
+        if ($this->background_brightness_percent) {
+            $this->background_secondary_color = $this->adjustBrightness(
+                $this->background_primary_color, $adjust_percent
+            );
+            $this->background_tertiary_color = $this->adjustBrightness(
+                $this->background_primary_color, 1.5 * $adjust_percent
+            );
+        }
+        if ($this->is_hex($this->text_primary_color)) {
+            $this->text_secondary_color = $this->adjustBrightness($this->text_primary_color, -0.15);
+            $this->text_tertiary_color = $this->adjustBrightness($this->text_primary_color, -0.30);
+        } else {
+            $this->text_secondary_color = $this->text_primary_color;
+            $this->text_tertiary_color = $this->text_primary_color;
+
+        }
+    }
 }

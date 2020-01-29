@@ -9,6 +9,14 @@
       "institution": "Data Coordinating Center @ Columbia"
     }
   ],
+  "versions": [
+    {
+      "0.6": "Initized"
+    },
+    {
+      "0.7": "Customize Variables"
+    }
+  ],
   "enable-every-page-hooks-on-system-pages": true,
   "permissions": [
     "redcap_every_page_top"
@@ -23,53 +31,118 @@
     },
     {
       "key": "background_primary_color",
-      "name": "Background color: Suggest #000, black",
+      "name": "Primary background color: Suggest #000, black",
       "required": false,
       "type": "text",
       "repeatable": false
     },
     {
+      "key": "background_brightness",
+      "name": "Should the other backgrounds, for example modal backgrounds, be the same, darker, lighter, or will you specify the colors ",
+      "required": false,
+      "type": "dropdown",
+      "choices": [
+        {
+          "name": "Same Color",
+          "value": "same"
+        },
+        {
+          "name": "Lighter",
+          "value": "lighter"
+        },
+        {
+          "name": "Darker",
+          "value": "darker"
+        },
+        {
+          "name": "Specify",
+          "value": "specify"
+        }
+      ]
+    },
+    {
+      "key": "background_secondary_color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color: Suggest #27221f, 27221f",
+      "required": false,
+      "type": "text",
+      "repeatable": false,
+      "branchingLogic": {
+        "field": "background_brightness",
+        "value": "specify"
+      }
+    },
+    {
+      "key": "background_tertiary_color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color: Suggest #444, Midnight Gray",
+      "required": false,
+      "type": "text",
+      "repeatable": false,
+      "branchingLogic": {
+        "field": "background_brightness",
+        "value": "specify"
+      }
+    },
+    {
+      "key": "background_brightness_percent",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 13% is used",
+      "required": false,
+      "type": "text",
+      "repeatable": false,
+      "branchingLogic": {
+        "type": "or",
+        "conditions": [
+          {
+            "field": "background_brightness",
+            "value": "lighter"
+          },
+          {
+            "field": "background_brightness",
+            "value": "darker"
+          }
+        ]
+      }
+    },
+    {
       "key": "text_primary_color",
-      "name": "Normal Text Color: Suggest #FFF, white",
+      "name": "Primary text color: Suggest #FFF, white",
       "required": false,
       "type": "text",
       "repeatable": false
     },
     {
       "key": "link_color",
-      "name": "Link Color: Suggest #FFF, white",
+      "name": "Link color: Suggest #DDD, white",
       "required": false,
       "type": "text",
       "repeatable": false
     },
     {
       "key": "primary_color",
-      "name": "Primary Color for buttons: Defaults to blue: #2e6da4",
+      "name": "Primary color for buttons: Defaults to blue: #2e6da4",
       "required": false,
       "type": "text",
       "repeatable": false
     },
     {
       "key": "success_color",
-      "name": "Success Color for buttons: Defaults to green: #28a745",
+      "name": "Success color for buttons: Defaults to green: #28a745",
       "required": false,
       "type": "text",
       "repeatable": false
     },
     {
       "key": "warning_color",
-      "name": "Warning Color for buttons and text: Defaults to yellow: #ffc107 ",
+      "name": "Warning color for buttons and text: Defaults to yellow: #ffc107 ",
       "required": false,
       "type": "text",
       "repeatable": false
     },
     {
       "key": "danger_color",
-      "name": "Danger Color for buttons and text: Defaults to red: #dc3545 ",
+      "name": "Danger color for buttons and text: Defaults to red: #dc3545 ",
       "required": false,
       "type": "text",
       "repeatable": false
     }
-
   ]
 }
