@@ -11,10 +11,13 @@
   ],
   "versions": [
     {
-      "0.6": "Initized"
+      "0.6": "Initialized"
     },
     {
       "0.7": "Customize Variables"
+    },
+    {
+      "0.8": "Adjustable secondary and tertiary backgrounds."
     }
   ],
   "enable-every-page-hooks-on-system-pages": true,
@@ -24,7 +27,7 @@
   "system-settings": [
     {
       "key": "user_names",
-      "name": "Usernames that will be in dark mode. (coming soon Separate names with commas.)",
+      "name": "User names that will be in dark mode. (coming soon Separate names with commas.)",
       "required": false,
       "type": "textarea",
       "repeatable": false
