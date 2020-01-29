@@ -6,6 +6,11 @@ use ExternalModules\AbstractExternalModule;
 use ExternalModules\ExternalModules;
 use \REDCap;
 
+/**
+ * Class DarkModeExternalModule
+ * @package DCC\DarkModeExternalModule
+ *
+ */
 class DarkModeExternalModule extends AbstractExternalModule
 {
     /**
@@ -14,7 +19,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     private $user_names;
 
     /**
-     * @var string $V desc
+     * @var string $css css created by users selections and outputed.
      */
     private $css;
 
@@ -100,6 +105,16 @@ class DarkModeExternalModule extends AbstractExternalModule
      */
     private $background_brightness_percent;
 
+
+    /**
+     * @var string $debug_info all of debug info you would like to know
+     * use '\n' to create new lines
+     */
+    private $debug_info;
+
+    /**
+     *
+     */
     function __construct()
     {
         parent::__construct();
@@ -107,13 +122,20 @@ class DarkModeExternalModule extends AbstractExternalModule
         $this->check_users();
 
         if ($this->can_use) {
+            $this->debug_info = "";
             $this->set_values();
             $this->set_colors();
             $this->adjust_background_colors();
+            $this->adjust_text_colors();
             $this->create_css();
+            $this->console_log();
         }
     }
 
+
+    /**
+     * Add the CSS to the top of every page.
+     */
     function redcap_every_page_top($project_id, $record, $instrument)
     {
         if ($this->can_use) {
@@ -121,11 +143,15 @@ class DarkModeExternalModule extends AbstractExternalModule
         }
     }
 
+    /**
+     *
+     * Set the value for can_use
+     * allow for all users if no users are specified.
+     */
     private function check_users()
     {
         $this->can_use = false;
         $this->user_names = $this->clean_values(AbstractExternalModule::getSystemSetting('user_names'));
-        // allow all users if a user name is not specified.
         if (!$this->user_names) {
             $this->can_use = true;
         }
@@ -135,11 +161,13 @@ class DarkModeExternalModule extends AbstractExternalModule
                 $this->can_use = true;
             }
         }
-        if ($this->can_use === false) {
-            echo '<script>console.log("user name does NOT match ' . USERID . ' & ' . $this->user_names . ' ");</script>';
-        }
     }
 
+
+    /**
+     * @param $value
+     * @return string string ready for output back to browser
+     */
     private function clean_values($value)
     {
         $cleaned = trim(strip_tags($value));
@@ -148,9 +176,11 @@ class DarkModeExternalModule extends AbstractExternalModule
         return $cleaned;
     }
 
+    /**
+     * get the user inputted settings
+     */
     private function set_values()
     {
-
 
         /** Primary background color */
         $this->background_primary_color = $this->clean_values(
@@ -158,17 +188,35 @@ class DarkModeExternalModule extends AbstractExternalModule
                 'background_primary_color'
             ));
 
-        /** Secondary background color */
-        $this->background_secondary_color = $this->clean_values(
+        /** background brightness */
+        $this->background_brightness = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
-                'background_secondary_color'
+                'background_brightness'
             ));
 
-        /** Tertiary background color */
-        $this->background_tertiary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'background_tertiary_color'
-            ));
+        /** background BRIGHTNESS PERCENT */
+        $this->background_brightness_percent = intval($this->clean_values(
+                AbstractExternalModule::getSystemSetting(
+                    'background_brightness_percent'
+                ))) / 100;
+
+
+        if ($this->background_brightness === 'specify') {
+            /** Secondary background color */
+            $this->background_secondary_color = $this->clean_values(
+                AbstractExternalModule::getSystemSetting(
+                    'background_secondary_color'
+                ));
+
+            /** Tertiary background color */
+            $this->background_tertiary_color = $this->clean_values(
+                AbstractExternalModule::getSystemSetting(
+                    'background_tertiary_color'
+                ));
+        } else {
+            $this->background_secondary_color = null;
+            $this->background_tertiary_color = null;
+        }
 
         /** Primary text color */
         $this->text_primary_color = $this->clean_values(
@@ -206,28 +254,18 @@ class DarkModeExternalModule extends AbstractExternalModule
                 'danger_color'
             ));
 
-        /** background brightness color */
-        $this->background_brightness = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'background_brightness'
-            ));
 
-        /** background brightness percent */
-        $this->background_brightness_percent = intval($this->clean_values(
-                AbstractExternalModule::getSystemSetting(
-                    'background_brightness_percent'
-                ))) / 100;
-
-        /*
-         * todo How to handle darker,lighter, specify, and percent brightness
-        */
+        $this->debug_info .= 'Background primary: ' . $this->background_primary_color . '\n';
+        $this->debug_info .= 'Background secondary: ' . $this->background_secondary_color . '\n';
+        $this->debug_info .= 'Background tertiary: ' . $this->background_tertiary_color . '\n';
+        $this->debug_info .= 'Background brightness: ' . $this->background_brightness . '\n';
     }
 
+    /**
+     * sets the default values for basic colors
+     */
     private function set_colors()
     {
-        // trick: enter in a text color like black and everything will be black
-
-        $is_auto_set_background = $this->adjust_background_colors();
 
         $this->white = '#FFF';
         $this->black = '#000';
@@ -248,25 +286,17 @@ class DarkModeExternalModule extends AbstractExternalModule
     }
 
     /** @noinspection CssInvalidHtmlTagReference */
+    /**
+     * prepare css for output
+     * When left blank, element values will NOT be overwritten leaving the default REDCap css un-affected.
+     * Shorthand codes
+     * bgc = Background Color
+     * tc = Text Color
+     * lc = Link Color
+     */
     private function create_css()
     {
-        /** todo: create arrays for elements that should have the background changed,
-         * Then create strings that build each element
-         * This way some items, when left blank, will NOT be overriden by the E.M.
-         * Instead leaving the default REDCap css un-affected.
-         **/
 
-
-        // This way the background-color would not be overriding anything when the user left it blank.
-        $black = "#000";
-
-        /*shorthand codes which allow the ability to NOT set a color if not defined.
-         * bgc = Background Color
-         * tc = Text Color
-         * lc = Link Color
-        */
-
-        // set all background colors if the primary color is set
         if ($this->background_primary_color) {
             $bg_trans = '  background-color:transparent !important;';
             $bgc1 = '  background-color:' . $this->background_primary_color . ' !important;';
@@ -945,7 +975,7 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'table.frmedit_tbl {' .
             '  border: none;' .
-            '  border-bottom: 10px solid' . $this->background_tertiary_color . ' !important;' .
+            '  border-bottom: 10px solid ' . $this->background_tertiary_color . ' !important;' .
             '}' . PHP_EOL .
 
             '</style>' . PHP_EOL;
@@ -1010,101 +1040,36 @@ class DarkModeExternalModule extends AbstractExternalModule
         return $isHex;
     }
 
-    private function createElements()
-    {
-        // todo think about the order of the elements.  Should they be specified or not
-        // If Not ordered than merging arrays is OK.  If order is important that a master array will be needed.
-        // There is also the issue that "!important will have to be thrown on every settings which is not good.
-        // $elements = ['body', '.menubox', 'a', 'a:visited', 'a:link'];
-
-
-        $background_transparent_elements = [
-            '#pagecontainer',
-            '#south'
-        ];
-        $background_primary_elements = [
-            'body',
-            '.menubox'
-        ];
-        $color_primary_elements = [
-            'body'
-        ];
-        $color_secondary_elements = [
-            '.menuboxsub'
-        ];
-        $link_primary_elements = [
-            'a',
-            'a:visited',
-            'a:link',
-            'a.aGrid:visited',
-            'a.aGrid:link',
-            'a[style*="color:#800000"]',
-            'a[style*="color:#A00000"]',
-            '#menuLnkChooseOtherRec'
-        ];
-        $elements = array_unique(
-            array_merge(
-                $background_transparent_elements,
-                $background_primary_elements,
-                $color_primary_elements,
-                $color_secondary_elements,
-                $link_primary_elements
-            )
-        );
-        $el = [];
-        foreach ($elements as $key => $element) {
-            if (in_array($element, $background_primary_elements)) {
-                $el[$element]['background-color'] = $this->background_primary_color;
-            }
-            if (in_array($element, $background_transparent_elements)) {
-                $el[$element]['background-color'] = 'transparent';
-            }
-            if (in_array($element, $color_primary_elements)) {
-                $el[$element]['color'] = $this->text_primary_color;
-            }
-            if (in_array($element, $color_secondary_elements)) {
-                $el[$element]['color'] = $this->text_secondary_color;
-            }
-            if (in_array($element, $link_primary_elements)) {
-                $el[$element]['color'] = $this->link_primary_color;
-            }
-        }
-        $css = '<style>' . PHP_EOL;
-        foreach ($el as $element => $attributes) {
-            $css .= $element . '{' . PHP_EOL;
-            if (count($attributes) > 0) {
-                foreach ($attributes as $attribute => $value) {
-                    $css .= $attribute . ':' . $value . ';' . PHP_EOL;
-                }
-            }
-            $css .= '}' . PHP_EOL;
-        }
-        $css = '</style>' . PHP_EOL;
-
-        return $css;
-
-    }
-
-// todo: think of the logic given all of the options.
-
+    /**
+     * set the secondary and tertiary background colors
+     * if nothing is specified for the background use 12.5 brightness adjustment
+     */
     private function adjust_background_colors()
     {
-        if($this->background_brightness_percent >= 0 && $this->background_brightness_percent <= 100){
-            $adjust_percent = $this->background_brightness_percent;
-        } else {
-            $adjust_percent = intval(12.5);
+        if ($this->is_hex($this->background_primary_color) === false) {
+            if ($this->background_brightness === "same") {
+                $this->background_secondary_color = $this->background_primary_color;
+                $this->background_tertiary_color = $this->background_primary_color;
+            }
+            return;
         }
+        $adjust_percent = null;
         if ($this->background_brightness === "same") {
             $adjust_percent = 0;
-        } else if ($this->background_brightness === "lighter") {
-            $adjust_percent = -1 * $adjust_percent;
-        } else if ($this->background_brightness === "darker") {
-            $adjust_percent = $adjust_percent;
-        } else {
-            $this->background_brightness_percent = null;
+        } else if ($this->background_brightness === "lighter" || $this->background_brightness === "darker") {
+            if ($this->background_brightness_percent >= 0 && $this->background_brightness_percent <= 100) {
+                $adjust_percent = $this->background_brightness_percent;
+            } else {
+                $adjust_percent = 20;
+            }
         }
 
-        if ($this->background_brightness_percent) {
+        if ($this->background_brightness === "darker") {
+            $adjust_percent = -1 * $adjust_percent;
+        }
+
+        if (!is_null($adjust_percent)) {
+            $this->debug_info .= 'Adjusting brightness\n';
             $this->background_secondary_color = $this->adjustBrightness(
                 $this->background_primary_color, $adjust_percent
             );
@@ -1112,6 +1077,17 @@ class DarkModeExternalModule extends AbstractExternalModule
                 $this->background_primary_color, 1.5 * $adjust_percent
             );
         }
+        $this->debug_info .= 'Adjust Percent: ' . $adjust_percent . '\n' .
+            'Secondary Background: ' . $this->background_secondary_color . '\n' .
+            'Tertiary Background: ' . $this->background_tertiary_color . '\n';
+    }
+
+    /**
+     * set the secondary and tertiary text colors
+     */
+    private
+    function adjust_text_colors()
+    {
         if ($this->is_hex($this->text_primary_color)) {
             $this->text_secondary_color = $this->adjustBrightness($this->text_primary_color, -0.15);
             $this->text_tertiary_color = $this->adjustBrightness($this->text_primary_color, -0.30);
@@ -1120,5 +1096,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             $this->text_tertiary_color = $this->text_primary_color;
 
         }
+    }
+
+    private
+    function console_log()
+    {
+        echo '<script>console.log("' .
+            $this->debug_info .
+            '")</script>';
     }
 }

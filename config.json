@@ -43,7 +43,7 @@
       "type": "dropdown",
       "choices": [
         {
-          "name": "Same Color",
+          "name": "Same Color as Primary Background",
           "value": "same"
         },
         {
@@ -84,7 +84,7 @@
     },
     {
       "key": "background_brightness_percent",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 13% is used",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 20% is used",
       "required": false,
       "type": "text",
       "repeatable": false,
