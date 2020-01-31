@@ -1085,8 +1085,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * set the secondary and tertiary text colors
      */
-    private
-    function adjust_text_colors()
+    private function adjust_text_colors()
     {
         if ($this->is_hex($this->text_primary_color)) {
             $this->text_secondary_color = $this->adjustBrightness($this->text_primary_color, -0.15);
@@ -1098,11 +1097,10 @@ class DarkModeExternalModule extends AbstractExternalModule
         }
     }
 
-    private
-    function console_log()
+    private function console_log()
     {
-        echo '<script>console.log("' .
+/*        echo '<script>console.log("' .
             $this->debug_info .
-            '")</script>';
+            '")</script>';*/
     }
 }
