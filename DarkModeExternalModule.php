@@ -255,10 +255,10 @@ class DarkModeExternalModule extends AbstractExternalModule
             ));
 
 
-        $this->debug_info .= 'Background primary: ' . $this->background_primary_color . '\n';
-        $this->debug_info .= 'Background secondary: ' . $this->background_secondary_color . '\n';
-        $this->debug_info .= 'Background tertiary: ' . $this->background_tertiary_color . '\n';
-        $this->debug_info .= 'Background brightness: ' . $this->background_brightness . '\n';
+        $this->debug_info .= 'User Background primary: ' . $this->background_primary_color . '\n';
+        $this->debug_info .= 'User Background secondary: ' . $this->background_secondary_color . '\n';
+        $this->debug_info .= 'User Background tertiary: ' . $this->background_tertiary_color . '\n';
+        $this->debug_info .= 'User Background brightness: ' . $this->background_brightness . '\n';
     }
 
     /**
@@ -351,6 +351,43 @@ class DarkModeExternalModule extends AbstractExternalModule
             $lc1 .
             '}' . PHP_EOL .
 
+            '#sub-nav li a, ' .
+            '#sub-nav li a:visited,' .
+            '#sub-nav li a:link,'.
+            '#sub-nav li,'.
+            ' {' .
+            'background:none !important;' .
+            '}' . PHP_EOL .
+
+            '#sub-nav li a,'.
+            '#sub-nav li a:visited,'.
+            '.extra-nav li a,'.
+            '.extra-nav li a:visited' .
+            ' {' .
+            'background:none !important;' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+            '#sub-nav li.active a,'.
+            '.extra-nav li.active a' .
+            ' {' .
+            'background:none !important;' .
+            $bgc3 .
+            '}' . PHP_EOL .
+
+            '#sub-nav li.active a:hover,'.
+            '#sub-nav li a:hover,'.
+            '.extra-nav li a:hover,'.
+            '.extra-nav li.active a:hover' .
+            ' {' .
+            'background:none !important;' .
+            $bgc3 .
+            '}' . PHP_EOL .
+
+
+
+
+
             'a.aGrid:visited,' .
             ' a.aGrid:link {' .
             $lc1 .
@@ -394,6 +431,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc2 .
             $bc2 .
             '}' . PHP_EOL .
+
+            '#control_center_menu .fas,' .
+            '#control_center_menu .far,' .
+            '#control_center_menu .fa  {' .
+            'color: inherit;' .
+            '}' . PHP_EOL .
+
 
             '.cc_menu_divider {' .
             $bgc2 .
@@ -493,6 +537,20 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bgc2 .
             '}' . PHP_EOL .
 
+            '#userProfileTable td {' .
+            $bg_trans .
+            '}' . PHP_EOL .
+
+
+            '#export_choices_table td[style*="background: rgb(238, 238, 238)"] {' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+            '#exportFormatForm fieldset[style*="background-color:#f9f9f9;"] {' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+
             '.flexigrid tr.erow td {' .
             $bg_trans .
             '}' . PHP_EOL .
@@ -521,7 +579,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'input[type="file"] {' .
-            $bg_trans .
+            $bgc2 .
             $lc1 .
             '}' . PHP_EOL .
 
@@ -619,7 +677,9 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
 
-            'div.blue {' .
+            'div.blue,' .
+            '.blue' .
+            ' {' .
             $tc1 .
             $bg_trans .
             $bc_trans .
@@ -637,9 +697,23 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  border-color: transparent;' .
             '}' . PHP_EOL .
 
+
+            'div.redcapAppCtrl {' .
+            $tc1 .
+            $bgc2 .
+            $bc_trans .
+            '}' . PHP_EOL .
+
+
             '.label_header {' .
             $tc1 .
             $bg_trans .
+            '}' . PHP_EOL .
+
+            '.notesp11 {' .
+            $tc1 .
+            $bgc2 .
+            "background-image:none;" .
             '}' . PHP_EOL .
 
             '#addUsersRolesDiv {' .
@@ -743,7 +817,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'textarea.x-form-field, input.x-form-field, select.x-form-field {' .
-            $bg_trans .
+            $bgc2 .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -824,11 +898,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'img[src*="checkbox_cross.png"],' .
-            'img[src*="checkbox_checked.png"] {' .
+            'img[src*="checkbox_checked.png"] '.
+            '{' .
             '  display:none;' .
             '}' . PHP_EOL .
 
             'img[src*="qrcode.png"],' .
+            'img[src*="tick_shield_small.png"],' .
             'img[src*="progress_circle.gif"]' .
             '{' .
             '  background-color:' . $this->white . ';' .
@@ -858,12 +934,18 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'p[style*="color:#777;"], ' .
+            'p[style*="color:#000066;"], ' .
+            'span[style*="color:#000066;"], ' .
             'span[style*="color:#555;"], ' .
             'span[style*="color:#000;"] {' .
             $tc1 .
             '}' . PHP_EOL .
 
             'input[style*="background-color: rgb(255, 255, 255)"] {' .
+            $bg_trans .
+            '}' . PHP_EOL .
+
+            'tr.grp2 {' .
             $bg_trans .
             '}' . PHP_EOL .
 
@@ -887,6 +969,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'div[style*="background-color:#EFF6E8;"],' .
+            'div[style*="background-color:#F0F0F0;"],' .
             'div[style*="background-color:#eee;"],' .
             'div[style*="background-color:#ddd;"]' .
             '{' .
@@ -894,7 +977,8 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
-            'div[style*="color:#800000;"]' .
+            'div[style*="color:#800000;"],' .
+            'div[style*="color:#000066;"]' .
             '{' .
             $tc1 .
             '}' . PHP_EOL .
@@ -913,6 +997,11 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'table.form_border {' .
             '  border-color: transparent !important;' .
+            '}' . PHP_EOL .
+
+
+            '.form_menu_selected {' .
+            $bgc2 .
             '}' . PHP_EOL .
 
             'input.btn2 {' .
@@ -954,6 +1043,26 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
+            'fieldset[style*="color:#eee;"],' .
+            'fieldset[style*="color:#FFFFD3;"] {' .
+            $bg_trans .
+            '}' . PHP_EOL .
+
+            'legend[style*="color:#333;"]' .
+            '{' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+
+
+            'fieldset[style*="background-color:#f3f5f5;"], '.
+            'fieldset[style*="background-color:#F3F5F5;"] '.
+            '{' .
+            $bgc1 .
+            '}' . PHP_EOL .
+
+
+
             '.select2-container--default .select2-selection--single .select2-selection__rendered {' .
             $bg_trans .
             $tc1 .
@@ -977,6 +1086,22 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  border: none;' .
             '  border-bottom: 10px solid ' . $this->background_tertiary_color . ' !important;' .
             '}' . PHP_EOL .
+
+
+            '#record_display_name {' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+
+            '.logt {' .
+            $bg_trans .
+            '}' . PHP_EOL .
+
+
+            'i.far[style*="color:#000088;"] {' .
+            $tc2 .
+            '}' . PHP_EOL .
+
 
             '</style>' . PHP_EOL;
 
@@ -1056,14 +1181,19 @@ class DarkModeExternalModule extends AbstractExternalModule
         $adjust_percent = null;
         if ($this->background_brightness === "same") {
             $adjust_percent = 0;
+            $this->debug_info .= 'Adjust Percent: None ' . '\n';
+
         } else if ($this->background_brightness === "lighter" || $this->background_brightness === "darker") {
             if ($this->background_brightness_percent >= 0 && $this->background_brightness_percent <= 100) {
+                $this->debug_info .= 'Adjust Percent: user inputed 0-100 ' . '\n';
                 $adjust_percent = $this->background_brightness_percent;
             } else {
+                $this->debug_info .= 'Adjust Percent: defaulted to 20% ' . '\n';
                 $adjust_percent = 20;
             }
         }
 
+        // if darker than it should be a negative value.  Lighter is a positive value.
         if ($this->background_brightness === "darker") {
             $adjust_percent = -1 * $adjust_percent;
         }
@@ -1099,8 +1229,8 @@ class DarkModeExternalModule extends AbstractExternalModule
 
     private function console_log()
     {
-/*        echo '<script>console.log("' .
+        echo '<script>console.log("' .
             $this->debug_info .
-            '")</script>';*/
+            '")</script>';
     }
 }

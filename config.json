@@ -76,7 +76,7 @@
     },
     {
       "key": "background_tertiary_color",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color: Suggest #444, Midnight Gray",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color: Suggest #444,Midnight Gray",
       "required": false,
       "type": "text",
       "repeatable": false,
@@ -115,34 +115,6 @@
     {
       "key": "link_color",
       "name": "Link color: Suggest #DDD, white",
-      "required": false,
-      "type": "text",
-      "repeatable": false
-    },
-    {
-      "key": "primary_color",
-      "name": "Primary color for buttons: Defaults to blue: #2e6da4",
-      "required": false,
-      "type": "text",
-      "repeatable": false
-    },
-    {
-      "key": "success_color",
-      "name": "Success color for buttons: Defaults to green: #28a745",
-      "required": false,
-      "type": "text",
-      "repeatable": false
-    },
-    {
-      "key": "warning_color",
-      "name": "Warning color for buttons and text: Defaults to yellow: #ffc107 ",
-      "required": false,
-      "type": "text",
-      "repeatable": false
-    },
-    {
-      "key": "danger_color",
-      "name": "Danger color for buttons and text: Defaults to red: #dc3545 ",
       "required": false,
       "type": "text",
       "repeatable": false
