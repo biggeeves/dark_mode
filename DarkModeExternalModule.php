@@ -70,7 +70,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     private $black;
 
     /**
-     * @var string $primary_color // todo
+     * @var string $primary_color
      */
     private $primary_color;
 
@@ -113,11 +113,19 @@ class DarkModeExternalModule extends AbstractExternalModule
     private $debug_info;
 
     /**
+     * @var boolean $debug_mode true=Debug On.  False = Debug Off
+     * use '\n' to create new lines
+     */
+    private $debug_mode;
+
+    /**
      *
      */
     function __construct()
     {
         parent::__construct();
+
+        $this->debug_mode = false;
 
         $this->check_users();
 
@@ -128,7 +136,9 @@ class DarkModeExternalModule extends AbstractExternalModule
             $this->adjust_background_colors();
             $this->adjust_text_colors();
             $this->create_css();
-            $this->console_log();
+            if ($this->debug_mode) {
+                $this->console_log();
+            }
         }
     }
 
@@ -136,7 +146,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * Add the CSS to the top of every page.
      */
-    function redcap_every_page_top($project_id, $record, $instrument)
+    function redcap_every_page_top($project_id)
     {
         if ($this->can_use) {
             $this->output_css();
@@ -353,39 +363,36 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '#sub-nav li a, ' .
             '#sub-nav li a:visited,' .
-            '#sub-nav li a:link,'.
-            '#sub-nav li,'.
+            '#sub-nav li a:link,' .
+            '#sub-nav li,' .
             ' {' .
             'background:none !important;' .
             '}' . PHP_EOL .
 
-            '#sub-nav li a,'.
-            '#sub-nav li a:visited,'.
-            '.extra-nav li a,'.
+            '#sub-nav li a,' .
+            '#sub-nav li a:visited,' .
+            '.extra-nav li a,' .
             '.extra-nav li a:visited' .
             ' {' .
             'background:none !important;' .
             $bgc2 .
             '}' . PHP_EOL .
 
-            '#sub-nav li.active a,'.
+            '#sub-nav li.active a,' .
             '.extra-nav li.active a' .
             ' {' .
             'background:none !important;' .
             $bgc3 .
             '}' . PHP_EOL .
 
-            '#sub-nav li.active a:hover,'.
-            '#sub-nav li a:hover,'.
-            '.extra-nav li a:hover,'.
+            '#sub-nav li.active a:hover,' .
+            '#sub-nav li a:hover,' .
+            '.extra-nav li a:hover,' .
             '.extra-nav li.active a:hover' .
             ' {' .
             'background:none !important;' .
             $bgc3 .
             '}' . PHP_EOL .
-
-
-
 
 
             'a.aGrid:visited,' .
@@ -587,8 +594,6 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             $tc1 .
             '}' . PHP_EOL .
-
-            // todo this sets all buttons.  btn-success, btn-warning, btn-primary would need overrides!
 
             'button {' .
             $bgc2 .
@@ -898,7 +903,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'img[src*="checkbox_cross.png"],' .
-            'img[src*="checkbox_checked.png"] '.
+            'img[src*="checkbox_checked.png"] ' .
             '{' .
             '  display:none;' .
             '}' . PHP_EOL .
@@ -1054,13 +1059,11 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
 
-
-            'fieldset[style*="background-color:#f3f5f5;"], '.
-            'fieldset[style*="background-color:#F3F5F5;"] '.
+            'fieldset[style*="background-color:#f3f5f5;"], ' .
+            'fieldset[style*="background-color:#F3F5F5;"] ' .
             '{' .
             $bgc1 .
             '}' . PHP_EOL .
-
 
 
             '.select2-container--default .select2-selection--single .select2-selection__rendered {' .
