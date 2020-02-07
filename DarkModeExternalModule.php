@@ -70,25 +70,6 @@ class DarkModeExternalModule extends AbstractExternalModule
     private $black;
 
     /**
-     * @var string $primary_color
-     */
-    private $primary_color;
-
-    /**
-     * @var string $success_color based on Bootstrap success color/idea
-     */
-    private $success_color;
-
-    /**
-     * @var string $warning_color based on Bootstrap warning color/idea
-     */
-    private $warning_color;
-
-    /**
-     * @var string $danger_color desc based on Bootstrap Danger color/idea
-     */
-    private $danger_color;
-    /**
      * @var boolean $can_use Does a user have rights to use the css?
      */
     private $can_use;
@@ -114,9 +95,16 @@ class DarkModeExternalModule extends AbstractExternalModule
 
     /**
      * @var boolean $debug_mode true=Debug On.  False = Debug Off
-     * use '\n' to create new lines
+     * use '\n' to create new lines in console.log
      */
     private $debug_mode;
+
+
+    /**
+     * @var boolean $is_project true=it is within a project.  False = it is general REDCap
+     *
+     */
+    private $is_project;
 
     /**
      *
@@ -125,17 +113,35 @@ class DarkModeExternalModule extends AbstractExternalModule
     {
         parent::__construct();
 
-        $this->debug_mode = false;
+        $this->is_project = $this->is_project_level();
+
+        /** Project settings override system settings */
+        $this->project_overrides_system = $this->clean_values(
+            AbstractExternalModule::getSystemSetting('project_overrides_system')
+        );
+
+        $this->debug_mode = true;
 
         $this->check_users();
 
         if ($this->can_use) {
             $this->debug_info = "";
-            $this->set_values();
+
+            $this->debug_info .= 'Is project ' . $this->is_project . '\n';
+            $this->debug_info .= 'Project overrides ' . $this->project_overrides_system . '\n';
+            if ($this->is_project && $this->project_overrides_system) {
+                $this->debug_info .= 'Project level\n';
+                $this->set_project_colors();
+            } else {
+                $this->debug_info .= 'System level\n';
+                $this->set_system_colors();
+            }
+
             $this->set_colors();
             $this->adjust_background_colors();
             $this->adjust_text_colors();
             $this->create_css();
+            $this->debug_user_settings();
             if ($this->debug_mode) {
                 $this->console_log();
             }
@@ -187,27 +193,28 @@ class DarkModeExternalModule extends AbstractExternalModule
     }
 
     /**
-     * get the user inputted settings
+     * get the user inputted SYSTEM settings
      */
-    private function set_values()
+    private function set_system_colors()
     {
 
         /** Primary background color */
         $this->background_primary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'background_primary_color'
-            ));
+            AbstractExternalModule::getSystemSetting('system_background_primary_color')
+        );
+
+        $this->debug_info .= '| color: ' . $this->background_primary_color . '\n';
 
         /** background brightness */
         $this->background_brightness = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
-                'background_brightness'
+                'system_background_brightness'
             ));
 
         /** background BRIGHTNESS PERCENT */
         $this->background_brightness_percent = intval($this->clean_values(
                 AbstractExternalModule::getSystemSetting(
-                    'background_brightness_percent'
+                    'system_background_brightness_percent'
                 ))) / 100;
 
 
@@ -215,13 +222,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             /** Secondary background color */
             $this->background_secondary_color = $this->clean_values(
                 AbstractExternalModule::getSystemSetting(
-                    'background_secondary_color'
+                    'system_background_secondary_color'
                 ));
 
             /** Tertiary background color */
             $this->background_tertiary_color = $this->clean_values(
                 AbstractExternalModule::getSystemSetting(
-                    'background_tertiary_color'
+                    'system_background_tertiary_color'
                 ));
         } else {
             $this->background_secondary_color = null;
@@ -231,44 +238,70 @@ class DarkModeExternalModule extends AbstractExternalModule
         /** Primary text color */
         $this->text_primary_color = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
-                'text_primary_color'
+                'system_text_primary_color'
             ));
 
         /** Link color */
         $this->link_primary_color = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
-                'link_color'
+                'system_link_color'
             ));
 
-        /** Primary color */
-        $this->primary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'primary_color'
+    }
+
+    /**
+     * get the user inputted project settings
+     */
+    private function set_project_colors()
+    {
+        global $project_id;
+        /** Primary background color */
+        $this->background_primary_color = $this->clean_values(
+            AbstractExternalModule::getProjectSetting('project_background_primary_color', $project_id)
+        );
+
+
+        /** background brightness */
+        $this->background_brightness = $this->clean_values(
+            AbstractExternalModule::getProjectSetting(
+                'project_background_brightness', $project_id
             ));
 
-        /** Success color */
-        $this->success_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'success_color'
+        /** background BRIGHTNESS PERCENT */
+        $this->background_brightness_percent = intval($this->clean_values(
+                AbstractExternalModule::getProjectSetting(
+                    'project_background_brightness_percent', $project_id
+                ))) / 100;
+
+
+        if ($this->background_brightness === 'specify') {
+            /** Secondary background color */
+            $this->background_secondary_color = $this->clean_values(
+                AbstractExternalModule::getProjectSetting(
+                    'project_background_secondary_color', $project_id
+                ));
+
+            /** Tertiary background color */
+            $this->background_tertiary_color = $this->clean_values(
+                AbstractExternalModule::getProjectSetting(
+                    'project_background_tertiary_color', $project_id
+                ));
+        } else {
+            $this->background_secondary_color = null;
+            $this->background_tertiary_color = null;
+        }
+
+        /** Primary text color */
+        $this->text_primary_color = $this->clean_values(
+            AbstractExternalModule::getProjectSetting(
+                'project_text_primary_color', $project_id
             ));
 
-        /** Warning color */
-        $this->warning_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'warning_color'
+        /** Link color */
+        $this->link_primary_color = $this->clean_values(
+            AbstractExternalModule::getProjectSetting(
+                'project_link_color', $project_id
             ));
-
-        /** Danger color */
-        $this->danger_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
-                'danger_color'
-            ));
-
-
-        $this->debug_info .= 'User Background primary: ' . $this->background_primary_color . '\n';
-        $this->debug_info .= 'User Background secondary: ' . $this->background_secondary_color . '\n';
-        $this->debug_info .= 'User Background tertiary: ' . $this->background_tertiary_color . '\n';
-        $this->debug_info .= 'User Background brightness: ' . $this->background_brightness . '\n';
     }
 
     /**
@@ -276,23 +309,8 @@ class DarkModeExternalModule extends AbstractExternalModule
      */
     private function set_colors()
     {
-
         $this->white = '#FFF';
         $this->black = '#000';
-
-        if (!$this->primary_color) {
-            $this->primary_color = '#2e6da4';
-        }
-        if (!$this->success_color) {
-            $this->success_color = '#28a745';
-        }
-        if (!$this->warning_color) {
-            $this->warning_color = '#ffc107';
-        }
-
-        if (!$this->danger_color) {
-            $this->danger_color = '#dc3545';
-        }
     }
 
     /** @noinspection CssInvalidHtmlTagReference */
@@ -1232,8 +1250,34 @@ class DarkModeExternalModule extends AbstractExternalModule
 
     private function console_log()
     {
-        echo '<script>console.log("' .
+        $console_message = "<script>console.log('" .
             $this->debug_info .
-            '")</script>';
+            "')</script>";
+        echo $console_message;
+    }
+
+    private function is_project_level()
+    {
+        global $project_id;
+        $this->debug_info .= 'Project ID in method: ' . $project_id . '\n';
+
+        return isset($project_id);
+    }
+
+    private function debug_user_settings()
+    {
+        global $project_id;
+        if (isset($project_id)) {
+            $this->debug_info .= 'Project ID: ' . $project_id . '\n';
+        } else {
+            $this->debug_info .= 'No Project ID\n';
+        }
+        $this->debug_info .= 'User Background primary: ' . $this->background_primary_color . '\n';
+        $this->debug_info .= 'User Background secondary: ' . $this->background_secondary_color . '\n';
+        $this->debug_info .= 'User Background tertiary: ' . $this->background_tertiary_color . '\n';
+        $this->debug_info .= 'User Background brightness: ' . $this->background_brightness . '\n';
+        $this->debug_info .= 'User Primary text : ' . $this->text_primary_color . '\n';
+        $this->debug_info .= 'User Secondary text : ' . $this->text_primary_color . '\n';
+        $this->debug_info .= 'User link: ' . $this->link_primary_color . '\n';
     }
 }

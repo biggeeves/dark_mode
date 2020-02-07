@@ -26,21 +26,35 @@
   ],
   "system-settings": [
     {
-      "key": "user_names",
-      "name": "User names that will be in dark mode. (coming soon Separate names with commas.)",
+      "key": "project_overrides_system",
+      "name": "Allow projects to override system dark mode settings",
       "required": false,
-      "type": "textarea",
-      "repeatable": false
+      "type": "dropdown",
+      "choices": [
+        {
+          "name": "Yes",
+          "value": "1"
+        },
+        {
+          "name": "No",
+          "value": "0"
+        }
+      ]
     },
     {
-      "key": "background_primary_color",
+      "key": "system_user_names",
+      "name": "User names that will be in dark mode. User names must be separated by a comma.)",
+      "required": false,
+      "type": "textarea"
+    },
+    {
+      "key": "system_background_primary_color",
       "name": "Primary background color: Suggest #000, black",
       "required": false,
-      "type": "text",
-      "repeatable": false
+      "type": "text"
     },
     {
-      "key": "background_brightness",
+      "key": "system_background_brightness",
       "name": "Should the other backgrounds, for example modal backgrounds, be the same, darker, lighter, or will you specify the colors ",
       "required": false,
       "type": "dropdown",
@@ -64,60 +78,131 @@
       ]
     },
     {
-      "key": "background_secondary_color",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color: Suggest #27221f, 27221f",
-      "required": false,
+      "key": "system_background_secondary_color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color",
       "type": "text",
-      "repeatable": false,
       "branchingLogic": {
-        "field": "background_brightness",
+        "field": "system_background_brightness",
         "value": "specify"
       }
     },
     {
-      "key": "background_tertiary_color",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color: Suggest #444,Midnight Gray",
-      "required": false,
+      "key": "system_background_tertiary_color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color",
       "type": "text",
-      "repeatable": false,
       "branchingLogic": {
-        "field": "background_brightness",
+        "field": "system_background_brightness",
         "value": "specify"
       }
     },
     {
-      "key": "background_brightness_percent",
+      "key": "system_background_brightness_percent",
       "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 20% is used",
-      "required": false,
       "type": "text",
-      "repeatable": false,
       "branchingLogic": {
         "type": "or",
         "conditions": [
           {
-            "field": "background_brightness",
+            "field": "system_background_brightness",
             "value": "lighter"
           },
           {
-            "field": "background_brightness",
+            "field": "system_background_brightness",
             "value": "darker"
           }
         ]
       }
     },
     {
-      "key": "text_primary_color",
-      "name": "Primary text color: Suggest #FFF, white",
-      "required": false,
-      "type": "text",
-      "repeatable": false
+      "key": "system_text_primary_color",
+      "name": "Primary text color",
+      "type": "text"
     },
     {
-      "key": "link_color",
-      "name": "Link color: Suggest #DDD, white",
-      "required": false,
+      "key": "system_link_color",
+      "name": "Link color",
+      "type": "text"
+    }
+  ],
+  "project-settings": [
+    {
+      "key": "project_user_names",
+      "name": "User names that will be in dark mode. User names must be separated by a comma.)",
+      "type": "textarea"
+    },
+    {
+      "key": "project_background_primary_color",
+      "name": "Primary background color",
+      "type": "text"
+    },
+    {
+      "key": "project_background_brightness",
+      "name": "Should the other backgrounds, for example modal backgrounds, be the same, darker, lighter, or will you specify the colors ",
+      "type": "dropdown",
+      "choices": [
+        {
+          "name": "Same Color as Primary Background",
+          "value": "same"
+        },
+        {
+          "name": "Lighter",
+          "value": "lighter"
+        },
+        {
+          "name": "Darker",
+          "value": "darker"
+        },
+        {
+          "name": "Specify",
+          "value": "specify"
+        }
+      ]
+    },
+    {
+      "key": "project_background_secondary_color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color",
       "type": "text",
-      "repeatable": false
+      "branchingLogic": {
+        "field": "project_background_brightness",
+        "value": "specify"
+      }
+    },
+    {
+      "key": "project_background_tertiary_color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color",
+      "type": "text",
+      "branchingLogic": {
+        "field": "project_background_brightness",
+        "value": "specify"
+      }
+    },
+    {
+      "key": "project_background_brightness_percent",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 20% is used",
+      "type": "text",
+      "branchingLogic": {
+        "type": "or",
+        "conditions": [
+          {
+            "field": "project_background_brightness",
+            "value": "lighter"
+          },
+          {
+            "field": "project_background_brightness",
+            "value": "darker"
+          }
+        ]
+      }
+    },
+    {
+      "key": "project_text_primary_color",
+      "name": "Primary text color",
+      "type": "text"
+    },
+    {
+      "key": "project_link_color",
+      "name": "Link color",
+      "type": "text"
     }
   ]
 }
