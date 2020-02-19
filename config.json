@@ -119,6 +119,11 @@
       "type": "text"
     },
     {
+      "key": "system_text_secondary_color",
+      "name": "Secondary text color",
+      "type": "text"
+    },
+    {
       "key": "system_link_color",
       "name": "Link color",
       "type": "text"
@@ -131,9 +136,28 @@
       "type": "textarea"
     },
     {
+      "key": "project_use_system_settings",
+      "name": "Use the system settings for this project.",
+      "type": "dropdown",
+      "choices": [
+        {
+          "name": "Set my own settings",
+          "value": "0"
+        },
+        {
+          "name": "Use system setting for color",
+          "value": "1"
+        }
+      ]
+    },
+    {
       "key": "project_background_primary_color",
       "name": "Primary background color",
-      "type": "text"
+      "type": "text",
+      "branchingLogic": {
+        "field": "project_use_system_settings",
+        "value": "0"
+      }
     },
     {
       "key": "project_background_brightness",
@@ -156,7 +180,11 @@
           "name": "Specify",
           "value": "specify"
         }
-      ]
+      ],
+      "branchingLogic": {
+        "field": "project_use_system_settings",
+        "value": "0"
+      }
     },
     {
       "key": "project_background_secondary_color",
@@ -197,12 +225,29 @@
     {
       "key": "project_text_primary_color",
       "name": "Primary text color",
-      "type": "text"
+      "type": "text",
+      "branchingLogic": {
+        "field": "project_use_system_settings",
+        "value": "0"
+      }
+    },
+    {
+      "key": "project_text_secondary_color",
+      "name": "Secondary text color",
+      "type": "text",
+      "branchingLogic": {
+        "field": "project_use_system_settings",
+        "value": "0"
+      }
     },
     {
       "key": "project_link_color",
       "name": "Link color",
-      "type": "text"
+      "type": "text",
+      "branchingLogic": {
+        "field": "project_use_system_settings",
+        "value": "0"
+      }
     }
   ]
 }

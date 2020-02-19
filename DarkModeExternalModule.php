@@ -107,6 +107,12 @@ class DarkModeExternalModule extends AbstractExternalModule
     private $is_project;
 
     /**
+     * @var boolean $use_system_settings true=Use System Settings.  False = Use Project settings
+     *
+     */
+    private $use_system_settings;
+
+    /**
      *
      */
     function __construct()
@@ -115,26 +121,33 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         $this->is_project = $this->is_project_level();
 
-        /** Project settings override system settings */
+        /** Do project settings override system settings */
         $this->project_overrides_system = $this->clean_values(
             AbstractExternalModule::getSystemSetting('project_overrides_system')
         );
 
-        $this->debug_mode = true;
+        /** Does the project use system settings */
+        if ($this->is_project) {
+            $this->project_use_system_settings = $this->clean_values(
+                AbstractExternalModule::getProjectSetting('project_use_system_settings')
+            );
+        }
+
+        $this->debug_mode = false;
+        $this->debug_info = "";
 
         $this->check_users();
 
         if ($this->can_use) {
-            $this->debug_info = "";
 
-            $this->debug_info .= 'Is project ' . $this->is_project . '\n';
-            $this->debug_info .= 'Project overrides ' . $this->project_overrides_system . '\n';
-            if ($this->is_project && $this->project_overrides_system) {
-                $this->debug_info .= 'Project level\n';
-                $this->set_project_colors();
-            } else {
-                $this->debug_info .= 'System level\n';
+            $this->use_system_settings = $this->use_system_settings();
+
+            if ($this->use_system_settings) {
+                $this->debug_info .= 'Using System level settings\n';
                 $this->set_system_colors();
+            } else {
+                $this->debug_info .= 'Using Project level settings\n';
+                $this->set_project_colors();
             }
 
             $this->set_colors();
@@ -198,20 +211,20 @@ class DarkModeExternalModule extends AbstractExternalModule
     private function set_system_colors()
     {
 
-        /** Primary background color */
+        /** System Primary background color */
         $this->background_primary_color = $this->clean_values(
             AbstractExternalModule::getSystemSetting('system_background_primary_color')
         );
 
         $this->debug_info .= '| color: ' . $this->background_primary_color . '\n';
 
-        /** background brightness */
+        /** System background brightness */
         $this->background_brightness = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
                 'system_background_brightness'
             ));
 
-        /** background BRIGHTNESS PERCENT */
+        /** System background brightness PERCENT */
         $this->background_brightness_percent = intval($this->clean_values(
                 AbstractExternalModule::getSystemSetting(
                     'system_background_brightness_percent'
@@ -219,13 +232,13 @@ class DarkModeExternalModule extends AbstractExternalModule
 
 
         if ($this->background_brightness === 'specify') {
-            /** Secondary background color */
+            /** System Secondary background color */
             $this->background_secondary_color = $this->clean_values(
                 AbstractExternalModule::getSystemSetting(
                     'system_background_secondary_color'
                 ));
 
-            /** Tertiary background color */
+            /** System Tertiary background color */
             $this->background_tertiary_color = $this->clean_values(
                 AbstractExternalModule::getSystemSetting(
                     'system_background_tertiary_color'
@@ -235,13 +248,19 @@ class DarkModeExternalModule extends AbstractExternalModule
             $this->background_tertiary_color = null;
         }
 
-        /** Primary text color */
+        /** System Primary text color */
         $this->text_primary_color = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
                 'system_text_primary_color'
             ));
 
-        /** Link color */
+        /** System Secondary text color */
+        $this->text_secondary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'system_text_secondary_color'
+            ));
+
+        /** System Link color */
         $this->link_primary_color = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
                 'system_link_color'
@@ -261,13 +280,13 @@ class DarkModeExternalModule extends AbstractExternalModule
         );
 
 
-        /** background brightness */
+        /** project background brightness */
         $this->background_brightness = $this->clean_values(
             AbstractExternalModule::getProjectSetting(
                 'project_background_brightness', $project_id
             ));
 
-        /** background BRIGHTNESS PERCENT */
+        /** project background brightness PERCENT */
         $this->background_brightness_percent = intval($this->clean_values(
                 AbstractExternalModule::getProjectSetting(
                     'project_background_brightness_percent', $project_id
@@ -275,13 +294,13 @@ class DarkModeExternalModule extends AbstractExternalModule
 
 
         if ($this->background_brightness === 'specify') {
-            /** Secondary background color */
+            /** project secondary background color */
             $this->background_secondary_color = $this->clean_values(
                 AbstractExternalModule::getProjectSetting(
                     'project_background_secondary_color', $project_id
                 ));
 
-            /** Tertiary background color */
+            /** project tertiary background color */
             $this->background_tertiary_color = $this->clean_values(
                 AbstractExternalModule::getProjectSetting(
                     'project_background_tertiary_color', $project_id
@@ -291,13 +310,20 @@ class DarkModeExternalModule extends AbstractExternalModule
             $this->background_tertiary_color = null;
         }
 
-        /** Primary text color */
+        /** project primary text color */
         $this->text_primary_color = $this->clean_values(
             AbstractExternalModule::getProjectSetting(
                 'project_text_primary_color', $project_id
             ));
 
-        /** Link color */
+
+        /** project secondary text color */
+        $this->text_secondary_color = $this->clean_values(
+            AbstractExternalModule::getProjectSetting(
+                'project_text_secondary_color', $project_id
+            ));
+
+        /** project link color */
         $this->link_primary_color = $this->clean_values(
             AbstractExternalModule::getProjectSetting(
                 'project_link_color', $project_id
@@ -368,6 +394,10 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc1 .
             $bgc1 .
             '}' . PHP_EOL .
+            'body.mobile-screen{' .
+            $tc1 .
+            $bgc1 .
+            '}' . PHP_EOL .
 
             '.menubox {' .
             $bgc2 .
@@ -382,7 +412,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '#sub-nav li a, ' .
             '#sub-nav li a:visited,' .
             '#sub-nav li a:link,' .
-            '#sub-nav li,' .
+            '#sub-nav li' .
             ' {' .
             'background:none !important;' .
             '}' . PHP_EOL .
@@ -434,7 +464,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '#west .fas,' .
             '#west .far,' .
             '#west .fa {' .
-            $tc2 .
+            $lc1 .
             '}' . PHP_EOL .
 
             '#west {' .
@@ -501,6 +531,10 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             $tc2 .
             $bc1 .
+            '}' . PHP_EOL .
+
+            '.headermatrix td {' .
+            $tc2 .
             '}' . PHP_EOL .
 
             '.well {' .
@@ -644,6 +678,20 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc1 .
             '}' . PHP_EOL .
 
+
+            '.ui-state-default,' .
+            '.ui-widget-content .ui-state-default' .
+            ' {' .
+            $bgc1 .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            '.ui-state-highlight' .
+            ' {' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+
             '.ui-widget-header {' .
             $bg_trans .
             $bc_trans .
@@ -667,20 +715,28 @@ class DarkModeExternalModule extends AbstractExternalModule
             '#addMatrixPopup input,' .
             '#addMatrixPopup select,' .
             '#addMatrixPopup textarea,' .
+            '#logicTesterRecordDropdown2,' .
             '.x-form-textarea {' .
             $bgc1 .
             $tc1 .
             '}' . PHP_EOL .
 
+            '.addFieldMatrixRowHdr' .
+            '{' .
+            $bg_trans .
+            $tc1 .
+            '}' . PHP_EOL .
+
+
             '.datagreen {' .
-            '  color:' . $this->success_color . ';' .
+            $tc1 .
             $bg_trans .
             '  border-color: transparent;' .
             '  background-image: none;' .
             '}' . PHP_EOL .
 
             '.datared {' .
-            '  color:' . $this->warning_color . ';' .
+            $tc1 .
             $bg_trans .
             '  border-color: transparent;' .
             '}' . PHP_EOL .
@@ -715,9 +771,9 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             'div.red {' .
-            '  color:' . $this->warning_color . ';' .
+            $tc1 .
             $bgc2 .
-            '  border-color: transparent;' .
+            'border-color: #ddd;' .
             '}' . PHP_EOL .
 
 
@@ -739,6 +795,10 @@ class DarkModeExternalModule extends AbstractExternalModule
             "background-image:none;" .
             '}' . PHP_EOL .
 
+            '.note {' .
+            $tc2 .
+            '}' . PHP_EOL .
+
             '#addUsersRolesDiv {' .
             $tc1 .
             $bg_trans .
@@ -758,7 +818,7 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '.jqbuttonsm, .jqbuttonmed {' .
             $lc1 .
-            $bg_trans .
+            '/*' . $bg_trans . '*/' .
             '}' . PHP_EOL .
 
             '.ui-state-hover,' .
@@ -779,7 +839,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bgc1 .
             '}' . PHP_EOL .
 
-            'tr.even {' .
+            'tr.even, tr.hdr2 {' .
             $tc1 .
             $bgc1 .
             '}' . PHP_EOL .
@@ -877,13 +937,12 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             '#reload_dropdown {' .
             $tc1 .
-            $bg_trans .
             '}' . PHP_EOL .
 
 
             'select {' .
             $tc1 .
-            $bg_trans .
+            $bgc1 .
             '}' . PHP_EOL .
 
             '#pubContent table {' .
@@ -926,9 +985,14 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  display:none;' .
             '}' . PHP_EOL .
 
+            'img[src*="neuroqol.gif"],' .
             'img[src*="qrcode.png"],' .
+            'img[src*="progress_circle.gif"],' .
+            'img[src*="phone_tablet.png"],' .
+            'img[src*="saslogo_small.png"],' .
+            'img[src*="rlogo_small.png"],' .
             'img[src*="tick_shield_small.png"],' .
-            'img[src*="progress_circle.gif"]' .
+            'img[src*="twilio.png"]' .
             '{' .
             '  background-color:' . $this->white . ';' .
             '}' . PHP_EOL .
@@ -937,19 +1001,59 @@ class DarkModeExternalModule extends AbstractExternalModule
             $lc1 .
             '}' . PHP_EOL .
 
+            'p[style*="background-color:#f5f5f5;"],' .
+            'div[style*="background-color: #eee;"],' .
+            'div[style*="background-color:#e0e0e0;"],' .
+            'div[style*="background-color: #f0f0f0;"],' .
             'div[style*="background-color:#f5f5f5;"],' .
+            'div[style*="background-color:#F5F5F5;"],' .
             'div[style*="background-color:#FAFAFA;"], ' .
-            'div[style*="background-color:#fafafa;"] ' .
+            'div[style*="background-color:#fafafa;"], ' .
+            'div[style*="background:#FFFFE0;"] ' .
             '{' .
             $tc1 .
             $bg_trans .
             '}' . PHP_EOL .
 
-            'div[style*="color:#444;"] {' .
+            'div[style*="color:#016f01;"], ' .
+            'div[style*="color: #212529;"], ' .
+            'div[style*="color:#333;"], ' .
+            'div[style*="color:#444;"], ' .
+            'div[style*="color:#555;"], ' .
+            'div[style*="color:#666;"], ' .
+            'div[style*="color:#777;"], ' .
+            'div[style*="color: #777;"], ' .
+            'div[style*="color:#888;"], ' .
+            'div[style*="color: #888;"], ' .
+            'div[style*="color:#C00000;"],' .
+            'div[style*="color:#000066;"]' .
+            '{' .
             $tc1 .
             '}' . PHP_EOL .
-            'h4[style*="color:#666;"] {' .
-            $tc1 .
+
+            'div[style*="color:#800000;"],' .
+            'div[style*="color: #800000;"],' .
+            'div[style*="color:#808080;"],' .
+            'div[style*="color: #808080;"],' .
+            'div[style*="color:#016f01;"], ' .
+            'div[style*="color:#313196;"], ' .
+            'div[style*="color:#A86700;"] ' .
+            '{' .
+            $tc2 .
+            '}' . PHP_EOL .
+
+
+            'h3[style*="color:#800000;"] ' .
+            '{' .
+            $tc2 .
+            '}' . PHP_EOL .
+
+            'h4,' .
+            'h4[style*="color:#666;"], ' .
+            'h4[style*="color:#000066;"], ' .
+            'h4[style*="color:#800000;"] ' .
+            '{' .
+            $tc2 .
             '}' . PHP_EOL .
 
             'a[style*="color:#000;"] {' .
@@ -958,9 +1062,67 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'p[style*="color:#777;"], ' .
             'p[style*="color:#000066;"], ' .
+            'p[style*="color:#800000;"], ' .
+            'span[style*="color: green;"], ' .
+            'span[style*="color:#000;"], ' .
+            'span[style*="color:#008000;"], ' .
             'span[style*="color:#000066;"], ' .
+            'span[style*="color:#C00000;"], ' .
+            'span[style*="color:#444;"], ' .
             'span[style*="color:#555;"], ' .
-            'span[style*="color:#000;"] {' .
+            'span[style*="color:#505050;"], ' .
+            'span[style*="color: #505050;"], ' .
+            'span[style*="color:#666;"], ' .
+            'span[style*="color:#777;"], ' .
+            'span[style*="color: #777;"], ' .
+            'span[style*="color:#800000;"], ' .
+            'span[style*="color:#808080;"], ' .
+            'b[style*="color:#000;"]' .
+            '{' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            'p[style*="color:#A00000"]' .
+            '{' .
+            $tc2 .
+            '}' . PHP_EOL .
+
+            'label[style*="color:#016301;"] ' .
+            '{' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            'table[style*="background-color: #f0f0f0;"] ' .
+            '{' .
+            $tc1 .
+            $bg_trans .
+            '}' . PHP_EOL .
+
+            'tr[bgcolor*="#F2F2F2"] ' .
+            '{' .
+            $tc1 .
+            $bg_trans .
+            '}' . PHP_EOL .
+
+            'td[style*="#C00000"], ' .
+            'td[style*="#800000"] ' .
+            '{' .
+            $tc2 .
+            '}' . PHP_EOL .
+
+            'font' .
+            '{' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+
+            '#div_custom_alignment_slider_tip ' .
+            '{' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            '.logicTesterRecordDropdownLabel' .
+            '{' .
             $tc1 .
             '}' . PHP_EOL .
 
@@ -970,6 +1132,10 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'tr.grp2 {' .
             $bg_trans .
+            '}' . PHP_EOL .
+
+            'tr.alt {' .
+            $bgc2 .
             '}' . PHP_EOL .
 
             'th[style*="background-color:#ddd;"],' .
@@ -987,9 +1153,19 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
-            'td[style*="color:#333;"] {' .
+            'td[style*="color:#333;"], ' .
+            'td[style*="color:#777;"] ' .
+            'td[style*="color:#800000;"] ' .
+            '{' .
             $tc1 .
             '}' . PHP_EOL .
+
+            'td.comp_new_error' .
+            '{' .
+            $tc1 .
+            $bgc1 .
+            '}' . PHP_EOL .
+
 
             'div[style*="background-color:#EFF6E8;"],' .
             'div[style*="background-color:#F0F0F0;"],' .
@@ -1000,22 +1176,23 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
-            'div[style*="color:#800000;"],' .
-            'div[style*="color:#000066;"]' .
-            '{' .
-            $tc1 .
-            '}' . PHP_EOL .
-
 
             'textarea[style*="background: rgb(247, 235, 235)"] {' .
             $tc1 .
             $bg_trans .
             '}' . PHP_EOL .
 
-            'td.frmedit, div.frmedit, td.frmedit_row {' .
+            'td.frmedit,' .
+            'div.frmedit' .
+            '{' .
             $tc1 .
-            $bg_trans .
-            $bgc2 .
+            $bgc1 .
+            $bc1 .
+            '}' . PHP_EOL .
+
+            'td.frmedit_row ' .
+            '{' .
+            $bgc1 .
             '}' . PHP_EOL .
 
             'table.form_border {' .
@@ -1035,8 +1212,14 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc1 .
             '}' . PHP_EOL .
 
-            '.mc_raw_val_fix b {' .
-            '  color:' . $this->warning_color . ';' .
+            '.mc_raw_val_fix .rawVal ' .
+            '{' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            '.mc_raw_val_fix b ' .
+            '{' .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.dropdown-menu {' .
@@ -1069,8 +1252,10 @@ class DarkModeExternalModule extends AbstractExternalModule
             'fieldset[style*="color:#eee;"],' .
             'fieldset[style*="color:#FFFFD3;"] {' .
             $bg_trans .
+            $tc1 .
             '}' . PHP_EOL .
 
+            'legend[style*="color:#800000;"],' .
             'legend[style*="color:#333;"]' .
             '{' .
             $tc1 .
@@ -1078,7 +1263,8 @@ class DarkModeExternalModule extends AbstractExternalModule
 
 
             'fieldset[style*="background-color:#f3f5f5;"], ' .
-            'fieldset[style*="background-color:#F3F5F5;"] ' .
+            'fieldset[style*="background-color:#F3F5F5;"], ' .
+            'fieldset[style*="background-color:#d9ebf5;"] ' .
             '{' .
             $bgc1 .
             '}' . PHP_EOL .
@@ -1103,16 +1289,14 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  color:' . $this->black . ' !important;' .
             '}' . PHP_EOL .
 
-            'table.frmedit_tbl {' .
+            '.frmedit_tbl {' .
             '  border: none;' .
-            '  border-bottom: 10px solid ' . $this->background_tertiary_color . ' !important;' .
+            '  border: 1px solid ' . $this->text_primary_coloror . ' !important;' .
             '}' . PHP_EOL .
-
 
             '#record_display_name {' .
             $tc1 .
             '}' . PHP_EOL .
-
 
             '.logt {' .
             $bg_trans .
@@ -1121,6 +1305,40 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'i.far[style*="color:#000088;"] {' .
             $tc2 .
+            '}' . PHP_EOL .
+
+            '.menuboxsub {' .
+            $tc2 .
+            '}' . PHP_EOL .
+
+            '.newdbsub {' .
+            $tc2 .
+            '}' . PHP_EOL .
+
+            '.listBox {' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+            '.brDrag {' .
+            $bgc2 .
+            'border: 1px solid ' . $this->background_secondary_color . ' !important' .
+            '}' . PHP_EOL .
+
+            '#faqDropdownParent {' .
+            $bgc2 .
+            '}' . PHP_EOL .
+
+            '.faqq, .faqq p {' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            '.faq_title {' .
+            $tc1 .
+            '}' . PHP_EOL .
+
+            '.tooltip1 {' .
+            $bgc2 .
+            $tc1 .
             '}' . PHP_EOL .
 
 
@@ -1239,12 +1457,12 @@ class DarkModeExternalModule extends AbstractExternalModule
     private function adjust_text_colors()
     {
         if ($this->is_hex($this->text_primary_color)) {
-            $this->text_secondary_color = $this->adjustBrightness($this->text_primary_color, -0.15);
             $this->text_tertiary_color = $this->adjustBrightness($this->text_primary_color, -0.30);
         } else {
-            $this->text_secondary_color = $this->text_primary_color;
             $this->text_tertiary_color = $this->text_primary_color;
-
+        }
+        if (!$this->text_secondary_color) {
+            $this->text_secondary_color = $this->text_primary_color;
         }
     }
 
@@ -1277,7 +1495,35 @@ class DarkModeExternalModule extends AbstractExternalModule
         $this->debug_info .= 'User Background tertiary: ' . $this->background_tertiary_color . '\n';
         $this->debug_info .= 'User Background brightness: ' . $this->background_brightness . '\n';
         $this->debug_info .= 'User Primary text : ' . $this->text_primary_color . '\n';
-        $this->debug_info .= 'User Secondary text : ' . $this->text_primary_color . '\n';
+        $this->debug_info .= 'User Secondary text : ' . $this->text_secondary_color . '\n';
         $this->debug_info .= 'User link: ' . $this->link_primary_color . '\n';
     }
+
+
+    /**
+     * Determine if system or project settings should be used.
+     *
+     * @return  boolean when system settings are used.  Default.
+     *
+     */
+
+    private function use_system_settings()
+    {
+        /** Does the project use system settings */
+        $use_system_settings = true;
+
+        $this->debug_info .= 'Project overrides: ' . $this->project_overrides_system . '\n';
+        $this->debug_info .= 'Project uses system settings: ' . $this->project_use_system_settings . '\n';
+
+        if ($this->is_project) {
+            if ($this->project_overrides_system) {
+                if (!$this->project_use_system_settings) {
+                    $use_system_settings = false;
+                }
+            }
+        }
+
+        return $use_system_settings;
+    }
+
 }
