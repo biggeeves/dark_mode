@@ -14,9 +14,14 @@ use \REDCap;
 class DarkModeExternalModule extends AbstractExternalModule
 {
     /**
-     * @var string $user_names CSV of user names that will see the custom css
+     * @var string $system_user_names CSV of system level user names that will see the custom css
      */
-    private $user_names;
+    private $system_user_names;
+
+    /**
+     * @var string $project_user_names CSV of project level user names that will see the custom css
+     */
+    private $project_user_names;
 
     /**
      * @var string $css css created by users selections and outputed.
@@ -133,10 +138,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             );
         }
 
-        $this->debug_mode = false;
+        $this->debug_mode = true;
         $this->debug_info = "";
 
-        $this->check_users();
+        $this->get_users();
+
+        $this->can_use = $this->check_users();
+
 
         if ($this->can_use) {
 
@@ -155,9 +163,9 @@ class DarkModeExternalModule extends AbstractExternalModule
             $this->adjust_text_colors();
             $this->create_css();
             $this->debug_user_settings();
-            if ($this->debug_mode) {
-                $this->console_log();
-            }
+        }
+        if ($this->debug_mode) {
+            $this->console_log();
         }
     }
 
@@ -172,6 +180,24 @@ class DarkModeExternalModule extends AbstractExternalModule
         }
     }
 
+    private function get_users()
+    {
+        global $project_id;
+
+        $this->system_user_names = $this->clean_values(
+            AbstractExternalModule::getSystemSetting('system_user_names')
+        );
+
+        if ($this->is_project) {
+            $this->project_user_names = $this->clean_values(
+                AbstractExternalModule::getProjectSetting('project_user_names', $project_id)
+            );
+        } else {
+            $this->project_user_names = null;
+        }
+    }
+
+
     /**
      *
      * Set the value for can_use
@@ -179,17 +205,54 @@ class DarkModeExternalModule extends AbstractExternalModule
      */
     private function check_users()
     {
-        $this->can_use = false;
-        $this->user_names = $this->clean_values(AbstractExternalModule::getSystemSetting('user_names'));
-        if (!$this->user_names) {
-            $this->can_use = true;
-        }
-        $allowed_users = explode(",", $this->user_names);
-        foreach ($allowed_users as $user) {
-            if (strtoupper(trim($user)) === strtoupper(USERID)) {
-                $this->can_use = true;
+        $can_use = false;
+
+        $this->debug_info .= 'allowed system users: -' . $this->system_user_names . '-\n';
+        $this->debug_info .= 'allowed project users: -' . $this->project_user_names . '-\n';
+
+        // If it is project level and no users are listed then all users are OK.
+        if ($this->is_project) {
+            if (is_null($this->project_user_names)) {
+                $this->debug_info .= 'Null Project User List -\n';
+                $can_use = true;
             }
         }
+
+        // is the user specified in either the System or the Project?
+        $is_specified = $this->is_specified_user();
+        if ($is_specified) {
+            $can_use = true;
+        }
+
+        // super users can always use
+        if (is_null($this->system_user_names) || empty($this->system_user_names)) {
+            $this->debug_info .= 'Null System User List -\n';
+            if (SUPER_USER) $can_use = 1;
+        } else {
+            $this->debug_info .= 'Not Null System User List -\n';
+        }
+
+        $this->debug_info .= 'User allowed: ' . ($this->can_use ? "Yes" : 'No') . '-\n';
+
+        return $can_use;
+
+    }
+
+    private function is_specified_user()
+    {
+        $is_specified = false;
+        $logged_user = strtoupper(USERID);
+
+        $user_names = $this->project_user_names . ',' . $this->system_user_names;
+
+        $allowed_users = explode(",", strtoupper($user_names));
+        foreach ($allowed_users as $user) {
+            if (trim($user) === $logged_user) {
+                $is_specified = true;
+            }
+        }
+
+        return $is_specified;
     }
 
 
@@ -274,6 +337,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     private function set_project_colors()
     {
         global $project_id;
+
         /** Primary background color */
         $this->background_primary_color = $this->clean_values(
             AbstractExternalModule::getProjectSetting('project_background_primary_color', $project_id)
@@ -389,7 +453,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             $lc1 = '';
         }
 
-        $css = '<style>' .
+        $css = '<!--styles below injected by Dark Mode E.M.--><style>' .
             'body{' .
             $tc1 .
             $bgc1 .
@@ -543,7 +607,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.table {' .
-            $tc2 .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.external-modules-configure-button,' .
@@ -552,6 +616,11 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc2 .
             $bgc2 .
             $bc3 .
+            '}' . PHP_EOL .
+
+            '.external-modules-title' .
+            '{' .
+            $tc2 .
             '}' . PHP_EOL .
 
             '.external-modules-input-element {' .
@@ -724,7 +793,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '.addFieldMatrixRowHdr' .
             '{' .
             $bg_trans .
-            $tc1 .
+            $tc2 .
             '}' . PHP_EOL .
 
 
@@ -985,12 +1054,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             '  display:none;' .
             '}' . PHP_EOL .
 
+            'img[src*="xls2.png"],' .
             'img[src*="neuroqol.gif"],' .
-            'img[src*="qrcode.png"],' .
             'img[src*="progress_circle.gif"],' .
             'img[src*="phone_tablet.png"],' .
-            'img[src*="saslogo_small.png"],' .
+            'img[src*="qrcode.png"],' .
             'img[src*="rlogo_small.png"],' .
+            'img[src*="saslogo_small.png"],' .
             'img[src*="tick_shield_small.png"],' .
             'img[src*="twilio.png"]' .
             '{' .
@@ -1075,11 +1145,15 @@ class DarkModeExternalModule extends AbstractExternalModule
             'span[style*="color:#666;"], ' .
             'span[style*="color:#777;"], ' .
             'span[style*="color: #777;"], ' .
-            'span[style*="color:#800000;"], ' .
-            'span[style*="color:#808080;"], ' .
             'b[style*="color:#000;"]' .
             '{' .
             $tc1 .
+            '}' . PHP_EOL .
+
+            'span[style*="color:#800000;"], ' .
+            'span[style*="color:#808080;"] ' .
+            '{' .
+            $tc2 .
             '}' . PHP_EOL .
 
             'p[style*="color:#A00000"]' .

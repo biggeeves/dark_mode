@@ -49,11 +49,18 @@ Primary Text: #C0C0C0
 Link: 
 
 An easy on the eye, grey scale color
-Primary Background Color: #222
+Primary Background Color: #222222
 Other backgrounds: Lighter by 15%
 Primary text color: #ddd
 Secondary text color: #98AFC7
 Link color: #f0f0f0
+
+Very Dark Background, blue links and white text. 
+Primary Background Color: #111111
+Other backgrounds: Lighter by 15%
+Primary text color: #FFF
+Secondary text color: #98AFC7
+Link color: #AED6F1
 
 In sections like the Help & FAQ the system settings will be applied.  This may be a bit jarring if a project has custom colors and they view the Help and FAQ section to see the system colors.
 

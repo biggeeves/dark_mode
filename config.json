@@ -27,7 +27,7 @@
   "system-settings": [
     {
       "key": "project_overrides_system",
-      "name": "Allow projects to override system dark mode settings",
+      "name": "Allow projects to override system color settings",
       "required": false,
       "type": "dropdown",
       "choices": [
@@ -43,7 +43,7 @@
     },
     {
       "key": "system_user_names",
-      "name": "User names that will be in dark mode. User names must be separated by a comma.)",
+      "name": "User names that will be in dark mode. User names must be separated by a comma.  When left blank settings will apply to all super users.",
       "required": false,
       "type": "textarea"
     },
@@ -115,12 +115,17 @@
     },
     {
       "key": "system_text_primary_color",
-      "name": "Primary text color",
+      "name": "Primary text color.",
       "type": "text"
     },
     {
       "key": "system_text_secondary_color",
-      "name": "Secondary text color",
+      "name": "Secondary text color, used to make text stand out more.",
+      "type": "text"
+    },
+    {
+      "key": "system_text_tertiary_color",
+      "name": "Tertiary text color, used to make text stand out less.",
       "type": "text"
     },
     {
@@ -132,20 +137,20 @@
   "project-settings": [
     {
       "key": "project_user_names",
-      "name": "User names that will be in dark mode. User names must be separated by a comma.)",
+      "name": "User names that will be in dark mode. User names must be separated by a comma.   When left blank settings will apply to all users.",
       "type": "textarea"
     },
     {
       "key": "project_use_system_settings",
-      "name": "Use the system settings for this project.",
+      "name": "Use the REDCap system color settings or use your own colors.",
       "type": "dropdown",
       "choices": [
         {
-          "name": "Set my own settings",
+          "name": "Set my own colors",
           "value": "0"
         },
         {
-          "name": "Use system setting for color",
+          "name": "Use the system colors",
           "value": "1"
         }
       ]
