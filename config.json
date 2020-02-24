@@ -27,7 +27,7 @@
   "system-settings": [
     {
       "key": "project_overrides_system",
-      "name": "Allow projects to override system color settings",
+      "name": "Use project colors, if specified, instead of system colors",
       "required": false,
       "type": "dropdown",
       "choices": [
@@ -43,7 +43,7 @@
     },
     {
       "key": "system_user_names",
-      "name": "User names that will be in dark mode. User names must be separated by a comma.  When left blank settings will apply to all super users.",
+      "name": "Specify user names, separated by a commas, that will use dark mode. Everyone else will not see the custom colors. When left blank settings will apply to all users.",
       "required": false,
       "type": "textarea"
     },
@@ -115,18 +115,36 @@
     },
     {
       "key": "system_text_primary_color",
-      "name": "Primary text color.",
+      "name": "Primary text color. This must be set to use secondary and tertiary colors.",
       "type": "text"
     },
     {
       "key": "system_text_secondary_color",
       "name": "Secondary text color, used to make text stand out more.",
-      "type": "text"
+      "type": "text",
+      "branchingLogic": {
+        "conditions": [
+          {
+            "field": "system_text_primary_color",
+            "op": "<>",
+            "value": ""
+          }
+        ]
+      }
     },
     {
       "key": "system_text_tertiary_color",
       "name": "Tertiary text color, used to make text stand out less.",
-      "type": "text"
+      "type": "text",
+      "branchingLogic": {
+        "conditions": [
+          {
+            "field": "system_text_primary_color",
+            "op": "<>",
+            "value": ""
+          }
+        ]
+      }
     },
     {
       "key": "system_link_color",
@@ -137,7 +155,7 @@
   "project-settings": [
     {
       "key": "project_user_names",
-      "name": "User names that will be in dark mode. User names must be separated by a comma.   When left blank settings will apply to all users.",
+      "name": "Specify user names, separated by a commas, that will use dark mode. Everyone else will not see the custom colors. When left blank settings will apply to all users.",
       "type": "textarea"
     },
     {
@@ -187,8 +205,17 @@
         }
       ],
       "branchingLogic": {
-        "field": "project_use_system_settings",
-        "value": "0"
+        "type": "or",
+        "conditions": [
+          {
+            "field": "project_use_system_settings",
+            "value": "0"
+          },
+          {
+            "field": "project_background_primary_color",
+            "value": "<>"
+          }
+        ]
       }
     },
     {
@@ -196,8 +223,17 @@
       "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color",
       "type": "text",
       "branchingLogic": {
-        "field": "project_background_brightness",
-        "value": "specify"
+        "type": "and",
+        "conditions": [
+          {
+            "field": "project_use_system_settings",
+            "value": "0"
+          },
+          {
+            "field": "project_background_brightness",
+            "value": "specify"
+          }
+        ]
       }
     },
     {
@@ -205,8 +241,17 @@
       "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color",
       "type": "text",
       "branchingLogic": {
-        "field": "project_background_brightness",
-        "value": "specify"
+        "type": "and",
+        "conditions": [
+          {
+            "field": "project_use_system_settings",
+            "value": "0"
+          },
+          {
+            "field": "project_background_brightness",
+            "value": "specify"
+          }
+        ]
       }
     },
     {
@@ -229,7 +274,7 @@
     },
     {
       "key": "project_text_primary_color",
-      "name": "Primary text color",
+      "name": "Primary text color. This must be set to use secondary and tertiary colors.",
       "type": "text",
       "branchingLogic": {
         "field": "project_use_system_settings",
@@ -241,8 +286,37 @@
       "name": "Secondary text color",
       "type": "text",
       "branchingLogic": {
-        "field": "project_use_system_settings",
-        "value": "0"
+        "type": "and",
+        "conditions": [
+          {
+            "field": "project_use_system_settings",
+            "value": "0"
+          },
+          {
+            "field": "project_text_primary_color",
+            "op": "<>",
+            "value": ""
+          }
+        ]
+      }
+    },
+    {
+      "key": "project_text_tertiary_color",
+      "name": "Tertiary text color",
+      "type": "text",
+      "branchingLogic": {
+        "type": "and",
+        "conditions": [
+          {
+            "field": "project_use_system_settings",
+            "value": "0"
+          },
+          {
+            "field": "project_text_primary_color",
+            "op": "<>",
+            "value": ""
+          }
+        ]
       }
     },
     {

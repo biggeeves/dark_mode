@@ -138,7 +138,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             );
         }
 
-        $this->debug_mode = true;
+        $this->debug_mode = false;
         $this->debug_info = "";
 
         $this->get_users();
@@ -323,6 +323,12 @@ class DarkModeExternalModule extends AbstractExternalModule
                 'system_text_secondary_color'
             ));
 
+        /** System Tertiary text color */
+        $this->text_tertiary_color = $this->clean_values(
+            AbstractExternalModule::getSystemSetting(
+                'system_text_tertiary_color'
+            ));
+
         /** System Link color */
         $this->link_primary_color = $this->clean_values(
             AbstractExternalModule::getSystemSetting(
@@ -387,6 +393,12 @@ class DarkModeExternalModule extends AbstractExternalModule
                 'project_text_secondary_color', $project_id
             ));
 
+        /** project tertiary text color */
+        $this->text_tertiary_color = $this->clean_values(
+            AbstractExternalModule::getProjectSetting(
+                'project_text_tertiary_color', $project_id
+            ));
+
         /** project link color */
         $this->link_primary_color = $this->clean_values(
             AbstractExternalModule::getProjectSetting(
@@ -438,8 +450,16 @@ class DarkModeExternalModule extends AbstractExternalModule
         // set all text colors if the primary text color is set
         if ($this->text_primary_color) {
             $tc1 = '  color:' . $this->text_primary_color . ' !important;';
-            $tc2 = '  color:' . $this->text_secondary_color . ' !important;';
-            $tc3 = '  color:' . $this->text_tertiary_color . ' !important;';
+            if ($this->text_secondary_color) {
+                $tc2 = '  color:' . $this->text_secondary_color . ' !important;';
+            } else {
+                $tc2 = '  color:' . $this->text_primary_color . ' !important;';
+            }
+            if ($this->text_secondary_color) {
+                $tc3 = '  color:' . $this->text_tertiary_color . ' !important;';
+            } else {
+                $tc3 = '  color:' . $this->text_primary_color . ' !important;';
+            }
         } else {
             $tc1 = '';
             $tc2 = '';
@@ -1059,6 +1079,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'img[src*="progress_circle.gif"],' .
             'img[src*="phone_tablet.png"],' .
             'img[src*="qrcode.png"],' .
+            'url[src*="redcap-logo-large.png"],' .
             'img[src*="rlogo_small.png"],' .
             'img[src*="saslogo_small.png"],' .
             'img[src*="tick_shield_small.png"],' .
@@ -1103,13 +1124,17 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'div[style*="color:#800000;"],' .
             'div[style*="color: #800000;"],' .
-            'div[style*="color:#808080;"],' .
-            'div[style*="color: #808080;"],' .
             'div[style*="color:#016f01;"], ' .
             'div[style*="color:#313196;"], ' .
             'div[style*="color:#A86700;"] ' .
             '{' .
             $tc2 .
+            '}' . PHP_EOL .
+
+            'div[style*="color:#808080;"],' .
+            'div[style*="color: #808080;"]' .
+            '{' .
+            $tc3 .
             '}' . PHP_EOL .
 
 
@@ -1150,10 +1175,15 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc1 .
             '}' . PHP_EOL .
 
-            'span[style*="color:#800000;"], ' .
-            'span[style*="color:#808080;"] ' .
+            'span[style*="color:#800000;"] ' .
             '{' .
             $tc2 .
+            '}' . PHP_EOL .
+
+            'span[style*="color:#808080;"], ' .
+            'b[style*="color:#555;"]' .
+            '{' .
+            $tc3 .
             '}' . PHP_EOL .
 
             'p[style*="color:#A00000"]' .
@@ -1382,7 +1412,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
             '.menuboxsub {' .
-            $tc2 .
+            $tc3 .
             '}' . PHP_EOL .
 
             '.newdbsub {' .
@@ -1530,11 +1560,11 @@ class DarkModeExternalModule extends AbstractExternalModule
      */
     private function adjust_text_colors()
     {
-        if ($this->is_hex($this->text_primary_color)) {
+        /*if ($this->is_hex($this->text_primary_color)) {
             $this->text_tertiary_color = $this->adjustBrightness($this->text_primary_color, -0.30);
         } else {
             $this->text_tertiary_color = $this->text_primary_color;
-        }
+        }*/
         if (!$this->text_secondary_color) {
             $this->text_secondary_color = $this->text_primary_color;
         }
@@ -1570,6 +1600,7 @@ class DarkModeExternalModule extends AbstractExternalModule
         $this->debug_info .= 'User Background brightness: ' . $this->background_brightness . '\n';
         $this->debug_info .= 'User Primary text : ' . $this->text_primary_color . '\n';
         $this->debug_info .= 'User Secondary text : ' . $this->text_secondary_color . '\n';
+        $this->debug_info .= 'User Tertiary text : ' . $this->text_tertiary_color . '\n';
         $this->debug_info .= 'User link: ' . $this->link_primary_color . '\n';
     }
 
