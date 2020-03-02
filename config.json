@@ -18,6 +18,9 @@
     },
     {
       "0.8": "Adjustable secondary and tertiary backgrounds."
+    },
+    {
+      "0.9": "Tertiary Text Color."
     }
   ],
   "enable-every-page-hooks-on-system-pages": true,
@@ -49,7 +52,7 @@
     },
     {
       "key": "system_background_primary_color",
-      "name": "Primary background color: Suggest #000, black",
+      "name": "Primary background color: Suggest #222222, black",
       "required": false,
       "type": "text"
     },
@@ -79,7 +82,7 @@
     },
     {
       "key": "system_background_secondary_color",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Secondary background color. Suggestion: #222222",
       "type": "text",
       "branchingLogic": {
         "field": "system_background_brightness",
@@ -88,7 +91,7 @@
     },
     {
       "key": "system_background_tertiary_color",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tertiary background color. Suggestion: #444444",
       "type": "text",
       "branchingLogic": {
         "field": "system_background_brightness",
@@ -97,7 +100,7 @@
     },
     {
       "key": "system_background_brightness_percent",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 20% is used",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 15 percent is used",
       "type": "text",
       "branchingLogic": {
         "type": "or",
@@ -115,7 +118,7 @@
     },
     {
       "key": "system_text_primary_color",
-      "name": "Primary text color. This must be set to use secondary and tertiary colors.",
+      "name": "Primary text color. This must be set to use secondary and tertiary colors. Suggestion: #FFFFFF",
       "type": "text"
     },
     {
@@ -256,7 +259,7 @@
     },
     {
       "key": "project_background_brightness_percent",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 20% is used",
+      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 15 percent is used",
       "type": "text",
       "branchingLogic": {
         "type": "or",
