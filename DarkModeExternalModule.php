@@ -244,7 +244,7 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         // If no users are specified than super users will see the colors.
         if (is_null($this->system_user_names) || empty($this->system_user_names)) {
-            $$this->add_to_debug_info('Null System User List');
+            $this->add_to_debug_info('Null System User List');
             if (defined("SUPER_USER") && SUPER_USER == 1) {
                 $can_use = true;
                 $this->add_to_debug_info('Super User: ' . (SUPER_USER ? "Yes" : 'No'));
