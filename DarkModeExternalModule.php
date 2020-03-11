@@ -139,6 +139,13 @@ class DarkModeExternalModule extends AbstractExternalModule
      */
     private $project_use_system_settings;
 
+
+    /**
+     * @var boolean  1=disabled, 0=enabled.
+     * use the URL to turn off of CSS overrides.
+     */
+    private $CSSDisabled;
+
     /**
      *
      */
@@ -169,7 +176,6 @@ class DarkModeExternalModule extends AbstractExternalModule
         }
     }
 
-
     /**
      * get and set the initial and default values.
      */
@@ -179,6 +185,7 @@ class DarkModeExternalModule extends AbstractExternalModule
         $this->default_brightness_percent = 15;
         $this->debug_mode = false;
         $this->debug_info = "";
+        $this->isCSSDisabled();
         $this->get_users();
 
         /** Do project settings override system settings */
@@ -195,8 +202,12 @@ class DarkModeExternalModule extends AbstractExternalModule
     }
 
 
+    /**
+     *
+     */
     private function set_up_dark_mode()
     {
+        if ($this->CSSDisabled) return; // disabled by the url
         $this->use_system_settings = $this->use_system_settings();
 
         if ($this->use_system_settings) {
@@ -278,7 +289,6 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         return $is_specified;
     }
-
 
     /**
      * sets allowed system user names and project user names
@@ -692,6 +702,10 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             $tc2 .
             $bc1 .
+            '}' . PHP_EOL .
+
+            '.crl {' .
+            $tc1 .
             '}' . PHP_EOL .
 
             '.yellow {' .
@@ -1196,6 +1210,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
+            'div[style*="color:green;"], ' .
             'div[style*="color:#016f01;"], ' .
             'div[style*="color: #212529;"], ' .
             'div[style*="color:#333;"], ' .
@@ -1207,7 +1222,9 @@ class DarkModeExternalModule extends AbstractExternalModule
             'div[style*="color:#888;"], ' .
             'div[style*="color: #888;"], ' .
             'div[style*="color:#C00000;"],' .
-            'div[style*="color:#000066;"]' .
+            'div[style*="color:#000066;"],' .
+            'div[style*="color: rgb(128, 0, 0);"],' .
+            'div[style*="color: rgb(192, 0, 0);"]' .
             '{' .
             $tc1 .
             '}' . PHP_EOL .
@@ -1223,6 +1240,11 @@ class DarkModeExternalModule extends AbstractExternalModule
 
             'div[style*="color:#808080;"],' .
             'div[style*="color: #808080;"]' .
+            '{' .
+            $tc3 .
+            '}' . PHP_EOL .
+
+            '.chklistbtn' .
             '{' .
             $tc3 .
             '}' . PHP_EOL .
@@ -1275,6 +1297,11 @@ class DarkModeExternalModule extends AbstractExternalModule
             'b[style*="color:#555;"]' .
             '{' .
             $tc3 .
+            '}' . PHP_EOL .
+
+            'b[style*="color:green;"]' .
+            '{' .
+            $tc1 .
             '}' . PHP_EOL .
 
             'p[style*="color:#A00000"]' .
@@ -1498,7 +1525,6 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
-
             'i.far[style*="color:#000088;"] {' .
             $tc2 .
             '}' . PHP_EOL .
@@ -1693,7 +1719,6 @@ class DarkModeExternalModule extends AbstractExternalModule
         return $adjust_percent;
     }
 
-
     /**
      * Used for debugging.  Output anything that debug_info contains.  Outputs to the console.
      */
@@ -1726,8 +1751,24 @@ class DarkModeExternalModule extends AbstractExternalModule
         $this->add_to_debug_info('User link: ' . $this->link_primary_color);
     }
 
+    /**
+     * @param $text string to be added to the debug console output.  Always appended with a line break.
+     */
     private function add_to_debug_info($text)
     {
         $this->debug_info .= str_replace("'", "", $text) . '\n';
     }
+
+    /**
+     * Debugger override.  Getting the setting from URL and override setting in file.
+     * sets $this->debug = 1 if it should be on.
+     */
+    private function isCSSDisabled()
+    {
+        $this->CSSDisabled = 0;
+        if ($_GET["cssdisabled"] === "1") {
+            $this->CSSDisabled = 1;
+        }
+    }
+
 }
