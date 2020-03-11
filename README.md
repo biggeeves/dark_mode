@@ -92,4 +92,5 @@ The range is 0% to 100% the color of the primary background color.  For example,
 
 <p>If you come up with an amazing color combo let me know!</p>
 <p>In sections like the Help & FAQ the system settings will be applied.  This may be a bit jarring if a project has custom colors and they view the Help and FAQ section to see the system colors.</p>
-<p>REDCap uses specific colors for many important things.  Sometimes red, green and blue are used in REDCap and it was the author's choice to leave those colors and their meaning in place, unchanged by this E.M.</p>  
+<p>REDCap uses specific colors for many important things.  Sometimes red, green and blue are used in REDCap and it was the author's choice to leave those colors and their meaning in place, unchanged by this E.M.</p>
+<p>Append the url with cssdisabled=1 to see the default page styles.</p>  
