@@ -1204,6 +1204,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'div[style*="background-color:#F5F5F5;"],' .
             'div[style*="background-color:#FAFAFA;"], ' .
             'div[style*="background-color:#fafafa;"], ' .
+            'div[style*="background-color:#FFE1E1;"], ' .
             'div[style*="background:#FFFFE0;"] ' .
             '{' .
             $tc1 .
@@ -1332,6 +1333,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc2 .
             '}' . PHP_EOL .
 
+
             'font' .
             '{' .
             $tc1 .
@@ -1391,6 +1393,7 @@ class DarkModeExternalModule extends AbstractExternalModule
 
 
             'div[style*="background-color:#EFF6E8;"],' .
+            'div[style*="background-color:#E8ECF0;"],' .
             'div[style*="background-color:#F0F0F0;"],' .
             'div[style*="background-color:#eee;"],' .
             'div[style*="background-color:#ddd;"]' .
