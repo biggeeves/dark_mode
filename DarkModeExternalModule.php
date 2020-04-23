@@ -720,6 +720,12 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bc1 .
             '}' . PHP_EOL .
 
+            '.h {' .
+            $bg_trans .
+            $tc2 .
+            $bc1 .
+            '}' . PHP_EOL .
+
             '.headermatrix td {' .
             $tc2 .
             '}' . PHP_EOL .
@@ -1184,6 +1190,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'img[src*="qrcode.png"],' .
             'url[src*="redcap-logo-large.png"],' .
             'img[src*="rlogo_small.png"],' .
+            'img[src*="redcap-logo.png"],' .
             'img[src*="saslogo_small.png"],' .
             'img[src*="tick_shield_small.png"],' .
             'img[src*="twilio.png"]' .
@@ -1377,6 +1384,13 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc1 .
             $bg_trans .
             '}' . PHP_EOL .
+
+            'td[style*="background: linear-gradient(rgb(255, 255, 255), rgb(229, 229, 229))"]' .
+            '{' .
+            'background: none !important;' .
+            'border-bottom: 1px solid #ccc;' .
+            '}' . PHP_EOL .
+
 
             'td[style*="color:#333;"], ' .
             'td[style*="color:#777;"] ' .
