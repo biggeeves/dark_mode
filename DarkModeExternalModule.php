@@ -1177,6 +1177,11 @@ class DarkModeExternalModule extends AbstractExternalModule
             $bg_trans .
             '}' . PHP_EOL .
 
+            '.card {' .
+            $tc1 .
+            $bg_trans .
+            '}' . PHP_EOL .
+
             'img[src*="checkbox_cross.png"],' .
             'img[src*="checkbox_checked.png"] ' .
             '{' .
@@ -1230,6 +1235,7 @@ class DarkModeExternalModule extends AbstractExternalModule
             'div[style*="color:#888;"], ' .
             'div[style*="color: #888;"], ' .
             'div[style*="color:#C00000;"],' .
+            'div[style*="color:#A00000;"],' .
             'div[style*="color:#000066;"],' .
             'div[style*="color: rgb(128, 0, 0);"],' .
             'div[style*="color: rgb(192, 0, 0);"]' .
@@ -1378,9 +1384,11 @@ class DarkModeExternalModule extends AbstractExternalModule
             '}' . PHP_EOL .
 
 
+            'td[style*="background-color: rgb(255, 255, 255);"],' .
             'td[style*="background-color: rgb(245, 245, 245)"],' .
             'td[style*="background: rgb(240, 240, 240);"],' .
-            'td[style*="background-color:#eee"] {' .
+            'td[style*="background-color:#eee"], ' .
+            'td[style*="background-color:#e5e5e5"] {' .
             $tc1 .
             $bg_trans .
             '}' . PHP_EOL .
@@ -1399,7 +1407,9 @@ class DarkModeExternalModule extends AbstractExternalModule
             $tc1 .
             '}' . PHP_EOL .
 
-            'td.comp_new_error' .
+            'td.comp_new_error,' .
+            'td.bg-light,' .
+            'td.nodesig' .
             '{' .
             $tc1 .
             $bgc1 .
