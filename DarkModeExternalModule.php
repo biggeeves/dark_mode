@@ -14,12 +14,12 @@ use \REDCap;
 class DarkModeExternalModule extends AbstractExternalModule
 {
     /**
-     * @var string $system_user_names CSV of SYSTEM level user names that will see the custom css
+     * @var string $system_user_names CSV of SYSTEM level usernames that will see the custom css
      */
     private $system_user_names;
 
     /**
-     * @var string $project_user_names CSV of PROJECT level user names that will see the custom css
+     * @var string $project_user_names CSV of PROJECT level usernames that will see the custom css
      */
     private $project_user_names;
 
@@ -67,12 +67,12 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * @var string $white HTML color code for white
      */
-    private $white;
+    private $white = '#FFF';
 
     /**
      * @var string $black HTML color code for black
      */
-    private $black;
+    private $black = '#000';
 
     /**
      * @var boolean $can_use Does a user have rights to use the css?
@@ -101,7 +101,7 @@ class DarkModeExternalModule extends AbstractExternalModule
 
 
     /**
-     * @var string $debug_info all of debug info you would like to know
+     * @var string $debug_info debug info to write out to the console via JS.
      * use '\n' to create new lines
      */
     private $debug_info;
@@ -149,7 +149,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      *
      */
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
 
@@ -169,7 +169,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * Add the CSS to the top of every page if the user can use it.
      */
-    function redcap_every_page_top($project_id)
+    public function redcap_every_page_top($project_id): void
     {
         if ($this->can_use) {
             $this->output_css();
@@ -179,7 +179,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * get and set the initial and default values.
      */
-    private function initialize()
+    private function initialize(): void
     {
         $this->is_project = $this->is_project();
         $this->default_brightness_percent = 15;
@@ -190,13 +190,13 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         /** Do project settings override system settings */
         $this->project_overrides_system = $this->clean_values(
-            AbstractExternalModule::getSystemSetting('project_overrides_system')
+            $this->getSystemSetting('project_overrides_system')
         );
 
         /** Does the project use system settings */
         if ($this->is_project) {
             $this->project_use_system_settings = $this->clean_values(
-                AbstractExternalModule::getProjectSetting('project_use_system_settings')
+                $this->getProjectSetting('project_use_system_settings')
             );
         }
     }
@@ -205,7 +205,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      *
      */
-    private function set_up_dark_mode()
+    private function set_up_dark_mode(): void
     {
         if ($this->CSSDisabled) return; // disabled by the url
         $this->use_system_settings = $this->use_system_settings();
@@ -218,7 +218,6 @@ class DarkModeExternalModule extends AbstractExternalModule
             $this->set_project_colors();
         }
 
-        $this->set_basic_colors();
         $this->adjust_background_colors();
         $this->adjust_text_colors();
         $this->create_css();
@@ -232,7 +231,7 @@ class DarkModeExternalModule extends AbstractExternalModule
      * If no users are listed than everyone uses the E.M.
      *
      */
-    private function check_users()
+    private function check_users(): bool
     {
         $can_use = false;
 
@@ -273,7 +272,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * @return bool  True=user is a specified user.  False=User is not in the list.
      */
-    private function is_specified_user()
+    private function is_specified_user(): bool
     {
         $is_specified = false;
         $logged_user = strtoupper(USERID);
@@ -291,19 +290,19 @@ class DarkModeExternalModule extends AbstractExternalModule
     }
 
     /**
-     * sets allowed system user names and project user names
+     * sets allowed system usernames and project usernames
      */
-    private function get_users()
+    private function get_users(): void
     {
         global $project_id;
 
         $this->system_user_names = $this->clean_values(
-            AbstractExternalModule::getSystemSetting('system_user_names')
+            $this->getSystemSetting('system_user_names')
         );
 
         if ($this->is_project) {
             $this->project_user_names = $this->clean_values(
-                AbstractExternalModule::getProjectSetting('project_user_names', $project_id)
+                $this->getProjectSetting('project_user_names', $project_id)
             );
         } else {
             $this->project_user_names = null;
@@ -314,7 +313,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * @return bool  true=project level.  false=system level page.
      */
-    private function is_project()
+    private function is_project(): bool
     {
         global $project_id;
         return isset($project_id);
@@ -328,7 +327,7 @@ class DarkModeExternalModule extends AbstractExternalModule
      *
      */
 
-    private function use_system_settings()
+    private function use_system_settings(): bool
     {
         /** Does the project use system settings */
         $use_system_settings = true;
@@ -336,12 +335,10 @@ class DarkModeExternalModule extends AbstractExternalModule
         $this->add_to_debug_info('Project overrides: ' . $this->project_overrides_system);
         $this->add_to_debug_info('Project uses system settings: ' . $this->project_use_system_settings);
 
-        if ($this->is_project) {
-            if ($this->project_overrides_system) {
-                if (!$this->project_use_system_settings) {
-                    $use_system_settings = false;
-                }
-            }
+        if ($this->is_project &&
+            $this->project_overrides_system &&
+            !$this->project_use_system_settings) {
+            $use_system_settings = false;
         }
 
         return $use_system_settings;
@@ -352,7 +349,7 @@ class DarkModeExternalModule extends AbstractExternalModule
      * @param string $value
      * @return string output escaped for out back to browser
      */
-    private function clean_values($value)
+    private function clean_values(string $value): string
     {
         $cleaned = trim(strip_tags($value));
         $cleaned = str_replace('"', "", $cleaned);
@@ -363,38 +360,39 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * get E.M. SYSTEM settings
      */
-    private function set_system_colors()
+    private function set_system_colors(): void
     {
 
         /** System Primary background color */
         $this->background_primary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting('system_background_primary_color')
+            $this->getSystemSetting('system_background_primary_color')
         );
 
         /** System background brightness */
         $this->background_brightness = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
+            $this->getSystemSetting(
                 'system_background_brightness'
             ));
 
         /** System background brightness PERCENT */
-        $background_brightness_percent = intval($this->clean_values(
-            AbstractExternalModule::getSystemSetting(
+        $background_brightness_percent = (int)$this->clean_values(
+            $this->getSystemSetting(
                 'system_background_brightness_percent'
-            )));
+            ));
+
 
         $this->adjust_percent = $this->validate_brightness_percent($background_brightness_percent);
 
         if ($this->background_brightness === 'specify') {
             /** System Secondary background color */
             $this->background_secondary_color = $this->clean_values(
-                AbstractExternalModule::getSystemSetting(
+                $this->getSystemSetting(
                     'system_background_secondary_color'
                 ));
 
             /** System Tertiary background color */
             $this->background_tertiary_color = $this->clean_values(
-                AbstractExternalModule::getSystemSetting(
+                $this->getSystemSetting(
                     'system_background_tertiary_color'
                 ));
         } else {
@@ -404,25 +402,25 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         /** System Primary text color */
         $this->text_primary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
+            $this->getSystemSetting(
                 'system_text_primary_color'
             ));
 
         /** System Secondary text color */
         $this->text_secondary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
+            $this->getSystemSetting(
                 'system_text_secondary_color'
             ));
 
         /** System Tertiary text color */
         $this->text_tertiary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
+            $this->getSystemSetting(
                 'system_text_tertiary_color'
             ));
 
         /** System Link color */
         $this->link_primary_color = $this->clean_values(
-            AbstractExternalModule::getSystemSetting(
+            $this->getSystemSetting(
                 'system_link_color'
             ));
 
@@ -431,40 +429,40 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * get E.M. project settings
      */
-    private function set_project_colors()
+    private function set_project_colors(): void
     {
         global $project_id;
 
         /** Primary background color */
         $this->background_primary_color = $this->clean_values(
-            AbstractExternalModule::getProjectSetting('project_background_primary_color', $project_id)
+            $this->getProjectSetting('project_background_primary_color', $project_id)
         );
 
 
         /** project background brightness */
         $this->background_brightness = $this->clean_values(
-            AbstractExternalModule::getProjectSetting(
+            $this->getProjectSetting(
                 'project_background_brightness', $project_id
             ));
 
         /** project background brightness PERCENT */
-        $background_brightness_percent = intval($this->clean_values(
-            AbstractExternalModule::getProjectSetting(
+        $background_brightness_percent = (int)$this->clean_values(
+            $this->getProjectSetting(
                 'project_background_brightness_percent', $project_id
-            )));
+            ));
 
         $this->adjust_percent = $this->validate_brightness_percent($background_brightness_percent);
 
         if ($this->background_brightness === 'specify') {
             /** project secondary background color */
             $this->background_secondary_color = $this->clean_values(
-                AbstractExternalModule::getProjectSetting(
+                $this->getProjectSetting(
                     'project_background_secondary_color', $project_id
                 ));
 
             /** project tertiary background color */
             $this->background_tertiary_color = $this->clean_values(
-                AbstractExternalModule::getProjectSetting(
+                $this->getProjectSetting(
                     'project_background_tertiary_color', $project_id
                 ));
         } else {
@@ -474,37 +472,28 @@ class DarkModeExternalModule extends AbstractExternalModule
 
         /** project primary text color */
         $this->text_primary_color = $this->clean_values(
-            AbstractExternalModule::getProjectSetting(
+            $this->getProjectSetting(
                 'project_text_primary_color', $project_id
             ));
 
 
         /** project secondary text color */
         $this->text_secondary_color = $this->clean_values(
-            AbstractExternalModule::getProjectSetting(
+            $this->getProjectSetting(
                 'project_text_secondary_color', $project_id
             ));
 
         /** project tertiary text color */
         $this->text_tertiary_color = $this->clean_values(
-            AbstractExternalModule::getProjectSetting(
+            $this->getProjectSetting(
                 'project_text_tertiary_color', $project_id
             ));
 
         /** project link color */
         $this->link_primary_color = $this->clean_values(
-            AbstractExternalModule::getProjectSetting(
+            $this->getProjectSetting(
                 'project_link_color', $project_id
             ));
-    }
-
-    /**
-     * sets the default values for basic colors
-     */
-    private function set_basic_colors()
-    {
-        $this->white = '#FFF';
-        $this->black = '#000';
     }
 
     /** @noinspection CssInvalidHtmlTagReference */
@@ -519,7 +508,7 @@ class DarkModeExternalModule extends AbstractExternalModule
      * tc# = Text Color
      * lc = Link Color
      */
-    private function create_css()
+    private function create_css(): void
     {
 
         // Use the specified color or don't do set the css property.
@@ -1305,13 +1294,21 @@ class DarkModeExternalModule extends AbstractExternalModule
             'span[style*="color:#800000;"] ' .
             '{' .
             $tc2 .
-            '}' . PHP_EOL .
+            '}' . PHP_EOL;
+
+        // IMPORTANT!  FOR SOME REASON THE STRING CALCULATION BONKS OUT HERE.
+        //   THEREFORE, IT IS BROKEN INTO TWO
+        //   This was not present in earlier version of REDCap, but for some reason fails on versions
+        //   after 9/2/2021
+
+        $css .=
 
             'span[style*="color:#808080;"], ' .
             'b[style*="color:#555;"]' .
             '{' .
             $tc3 .
             '}' . PHP_EOL .
+
 
             'b[style*="color:green;"]' .
             '{' .
@@ -1607,9 +1604,9 @@ class DarkModeExternalModule extends AbstractExternalModule
     }
 
     /**
-     * Output all of the constructed CSS to the browser.
+     * Output all the constructed CSS to the browser.
      */
-    private function output_css()
+    private function output_css(): void
     {
         echo $this->css;
     }
@@ -1622,14 +1619,14 @@ class DarkModeExternalModule extends AbstractExternalModule
      *
      * @return  string Hex color code.
      */
-    function adjustBrightness($hexCode, $adjustPercent)
+    private function adjustBrightness(string $hexCode, float $adjustPercent): string
     {
         if ($adjustPercent > 1 || $adjustPercent < -1) {
             return $hexCode;
         }
         $hexCode = ltrim($hexCode, '#');
 
-        if (strlen($hexCode) == 3) {
+        if (strlen($hexCode) === 3) {
             $hexCode = $hexCode[0] . $hexCode[0] . $hexCode[1] . $hexCode[1] . $hexCode[2] . $hexCode[2];
         }
 
@@ -1645,12 +1642,12 @@ class DarkModeExternalModule extends AbstractExternalModule
     }
 
     /**
-     * Check if a code entered by user is hexidecimal
+     * Check if a code entered by user is hexadecimal
      *
      * @param string $text
-     * @return  boolean true=is hexidecimal  false=not hexidecimal
+     * @return  boolean true=is hexadecimal  false=not hexadecimal
      */
-    private function is_hex($text)
+    private function is_hex(string $text): bool
     {
         $hexCode = ltrim($text, '#');
         $isHex = true;
@@ -1666,7 +1663,7 @@ class DarkModeExternalModule extends AbstractExternalModule
      * set the secondary and tertiary background colors
      * if nothing is specified for the background the default adjustment is uesd.
      */
-    private function adjust_background_colors()
+    private function adjust_background_colors(): void
     {
         // check to see if adjustment is called for
         if ($this->background_brightness === "lighter" ||
@@ -1716,7 +1713,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * set the secondary and tertiary text colors.  Use primary color if the color is not set.
      */
-    private function adjust_text_colors()
+    private function adjust_text_colors(): void
     {
         if (!$this->text_secondary_color) {
             $this->text_secondary_color = $this->text_primary_color;
@@ -1749,7 +1746,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * Used for debugging.  Output anything that debug_info contains.  Outputs to the console.
      */
-    private function console_log()
+    private function console_log(): void
     {
         $console_message = "<script>console.log('" .
             $this->debug_info .
@@ -1760,7 +1757,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      *  add user settings to the debug information.
      */
-    private function debug_user_settings()
+    private function debug_user_settings(): void
     {
         global $project_id;
         if (isset($project_id)) {
@@ -1781,7 +1778,7 @@ class DarkModeExternalModule extends AbstractExternalModule
     /**
      * @param $text string to be added to the debug console output.  Always appended with a line break.
      */
-    private function add_to_debug_info($text)
+    private function add_to_debug_info($text): void
     {
         $this->debug_info .= str_replace("'", "", $text) . '\n';
     }
@@ -1790,7 +1787,7 @@ class DarkModeExternalModule extends AbstractExternalModule
      * Debugger override.  Getting the setting from URL and override setting in file.
      * sets $this->debug = 1 if it should be on.
      */
-    private function isCSSDisabled()
+    private function isCSSDisabled(): void
     {
         $this->CSSDisabled = 0;
         if ($_GET["cssdisabled"] === "1") {
