@@ -207,10 +207,11 @@ class DarkModeExternalModule extends AbstractExternalModule
      */
     private function set_up_dark_mode(): void
     {
-        if ($this->CSSDisabled) return; // disabled by the url
-        $this->use_system_settings = $this->use_system_settings();
+        if ($this->CSSDisabled) {
+            return;
+        } // disabled by the url
 
-        if ($this->use_system_settings) {
+        if ($this->use_system_settings()) {
             $this->add_to_debug_info('Using System level settings');
             $this->set_system_colors();
         } else {
@@ -252,8 +253,8 @@ class DarkModeExternalModule extends AbstractExternalModule
             $can_use = true;
         }
 
-        // If no users are specified than super users will see the colors.
-        if (is_null($this->system_user_names) || empty($this->system_user_names)) {
+        // If no users are specified than superusers will see the colors.
+        if (empty($this->system_user_names) || is_null($this->system_user_names)) {
             $this->add_to_debug_info('Null System User List');
             if (defined("SUPER_USER") && SUPER_USER == 1) {
                 $can_use = true;
@@ -346,10 +347,10 @@ class DarkModeExternalModule extends AbstractExternalModule
 
 
     /**
-     * @param string $value
+     * @param string|null $value
      * @return string|null output escaped for out back to browser
      */
-    private function clean_values(string $value): ?string
+    private function clean_values(?string $value): ?string
     {
         return str_replace('"', "", trim(strip_tags($value)));
     }

@@ -9,6 +9,11 @@
       "institution": "Data Coordinating Center @ Columbia"
     }
   ],
+  "compatibility": {
+    "php-version-min": "7.1.0",
+    "php-version-max": "7.9.0"
+  },
+
   "versions": [
     {
       "0.6": "Initialized"
@@ -21,6 +26,9 @@
     },
     {
       "0.9": "Tertiary Text Color."
+    },
+    {
+      "1.7": "Bug Fixes"
     }
   ],
   "framework-version": 8,
