@@ -347,14 +347,11 @@ class DarkModeExternalModule extends AbstractExternalModule
 
     /**
      * @param string $value
-     * @return string output escaped for out back to browser
+     * @return string|null output escaped for out back to browser
      */
-    private function clean_values(string $value): string
+    private function clean_values(string $value): ?string
     {
-        $cleaned = trim(strip_tags($value));
-        $cleaned = str_replace('"', "", $cleaned);
-        $cleaned = str_replace('"', "", $cleaned);
-        return $cleaned;
+        return str_replace('"', "", trim(strip_tags($value)));
     }
 
     /**
