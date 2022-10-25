@@ -10,8 +10,8 @@
     }
   ],
   "compatibility": {
-    "php-version-min": "7.1.0",
-    "php-version-max": "7.9.0"
+    "php-version-min": "8.0.0",
+    "php-version-max": "8.8.0"
   },
 
   "versions": [
@@ -29,6 +29,10 @@
     },
     {
       "1.7": "Bug Fixes"
+    }
+  ,
+    {
+      "1.8": "PHP Version 8 Compatible."
     }
   ],
   "framework-version": 8,
