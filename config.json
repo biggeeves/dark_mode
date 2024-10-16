@@ -28,18 +28,19 @@
       "0.9": "Tertiary Text Color."
     },
     {
-      "1.7": "Bug Fixes"
+      "1.0.7": "Bug Fixes"
     }
   ,
     {
-      "1.8": "PHP Version 8 Compatible."
+      "1.0.8": "PHP Version 8 Compatible."
+    }
+  ,
+    {
+      "1.1.0": "Updated EM Framework."
     }
   ],
-  "framework-version": 8,
+  "framework-version": 13,
   "enable-every-page-hooks-on-system-pages": true,
-  "permissions": [
-    "redcap_every_page_top"
-  ],
   "system-settings": [
     {
       "key": "project_overrides_system",
@@ -113,7 +114,7 @@
     },
     {
       "key": "system_background_brightness_percent",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 15 percent is used",
+      "name": "Darker/Lighter by what percent? (0-100)<br>If left blank 15 percent is used",
       "type": "text",
       "branchingLogic": {
         "type": "or",
@@ -272,7 +273,7 @@
     },
     {
       "key": "project_background_brightness_percent",
-      "name": "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Darker/Lighter by what percent? (0-100)<br>If left blank 15 percent is used",
+      "name": "Darker/Lighter by what percent? (0-100)<br>If left blank 15 percent is used",
       "type": "text",
       "branchingLogic": {
         "type": "or",
